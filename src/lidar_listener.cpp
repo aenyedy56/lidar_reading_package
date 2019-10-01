@@ -17,7 +17,7 @@ void pointCloudCallBack(const sensor_msgs::PointCloud2& lidar_pointcloud){
   //rotation matrix to use global coordinates (get z)
   //use a rotation about x to convert the coordinates
   Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
-  float theta = M_PI/2; //angle of rotations in radians
+  float theta = -1*M_PI/2; //angle of rotations in radians
   transform_1(1,1) = std::cos(theta);
   transform_1(1,2) = -sin(theta);
   transform_1(2,1) = sin(theta);
