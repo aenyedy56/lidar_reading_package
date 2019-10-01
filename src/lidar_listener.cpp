@@ -1,15 +1,38 @@
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
-
+#include <pcl_ros/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/console/parse.h>
+#include <pcl/point_types.h>
+#include <pcl_ros/transforms.h>
 
 ros::Publisher mod_cloud_pub;
 
 //this is the operation that occurs when the subscriber receives the pointcloud from the SICK publisher
-void pointCloudCallBack(const sensor_msgs::PointCloud2::ConstPtr& lidar_pointcloud){
+void pointCloudCallBack(const sensor_msgs::PointCloud2& lidar_pointcloud){
   //This callback currently writes that it found th-
   ROS_INFO("Received pointcloud");
   //regurgitate the data from the pointcloud received from the lidar
-  mod_cloud_pub.publish(*lidar_pointcloud);
+
+  //rotation matrix to use global coordinates (get z)
+  //use a rotation about x to convert the coordinates
+  Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
+  float theta = M_PI/2; //angle of rotations in radians
+  transform_1(1,1) = std::cos(theta);
+  transform_1(1,2) = -sin(theta);
+  transform_1(2,1) = sin(theta);
+  transform_1(2,2) = std::cos(theta);
+
+  const Eigen::Matrix4f transform = transform_1;
+  
+  //set up blank pointcloud to store transformed pointcloud
+  sensor_msgs::PointCloud2 modified_pointcloud;
+  
+  //apply transform
+  pcl_ros::transformPointCloud (transform, lidar_pointcloud, modified_pointcloud);  
+  
+  //publish modified pointcloud
+  mod_cloud_pub.publish(modified_pointcloud);
 }
 
 //This is where we declare the node and its various interactions with other nodes
