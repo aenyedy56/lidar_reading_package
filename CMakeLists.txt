@@ -137,7 +137,9 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/lidar_reading_package_node.cpp)
 add_executable(lidar_listener src/lidar_listener.cpp)
+add_executable(transformed_listener src/transformed_listener.cpp)
 target_link_libraries(lidar_listener ${catkin_LIBRARIES})
+target_link_libraries(transformed_listener ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
