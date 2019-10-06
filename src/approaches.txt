@@ -1,0 +1,13 @@
+Potential Approach
+
+We can rerun SACSegmentation for each best line by removing previous line and finding next best segment.
+
+We only care about a specific scan area from the lidar, from straight downwards to directly in front (e.g. -90 degrees to 0 degrees on XZ plane), as that is all we need to detect stair features. PointCloudXYZ data items 45 to 135.
+
+Plan:
+
+- Run RANSAC multiple times
+- Concatenate segment clusters
+- Somehow identify which are horizontal stair platforms
+- Find difference in Z between clusters for approximate stair height
+- Same with depth

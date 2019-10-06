@@ -29,55 +29,47 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
   //convert transformed_pointcloud (PointCloud2 msg) to recpc (PointCloud obj)
   pcl::fromROSMsg(transformed_pointcloud, *recpc);
 
+
+  // leaving this here as an example of how to print non String data
+  /*
+  float x = recpc->points[810].x;
+  float y = recpc->points[810].y;
+  float z = recpc->points[810].z;
+  
+
+  std::cerr << "XYZ: " << x << " "
+  		       << y << " "
+                       << z << std::endl;
+  
+  //std::cerr << "length of points: " << recpc->points.size() << std::endl;
+  */
+
+
+  // taken from pointclouds.org documentation about planar segmentation
+  // this is segmentation
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  // Create the segmentation object
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+  // Optional
+  seg.setOptimizeCoefficients (true);
+  // Mandatory
+  seg.setModelType (pcl::SACMODEL_LINE); // looking for lines in the data
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setDistanceThreshold (0.01); // perhaps tune this to have higher room for error?
+  
+  //set the pointcloud that will be source for segmenter
+  seg.setInputCloud (recpc);
+  
+  //segment the pointcloud, placing results in inliers and coefficients
+  seg.segment (*inliers, *coefficients);
+  
   //set up blank pointcloud for copying over the segmented data
   pcl::PointCloud<pcl::PointXYZ> segpc;
-
-  int line_count =0;
-  bool foundLine = true;
-  do {
-    // taken from pointclouds.org documentation about planar segmentation
-    // this is segmentation
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    // Create the segmentation object
-    pcl::SACSegmentation<pcl::PointXYZ> seg;
-    // Optional
-    seg.setOptimizeCoefficients (true);
-    // Mandatory
-    seg.setModelType (pcl::SACMODEL_LINE); // looking for lines in the data
-    seg.setMethodType (pcl::SAC_RANSAC);
-    seg.setDistanceThreshold (0.01); // perhaps tune this to have higher room for error?
-    
-    //set the pointcloud that will be source for segmenter
-    seg.setInputCloud (recpc);
-    
-    //segment the pointcloud, placing results in inliers and coefficients
-    seg.segment (*inliers, *coefficients);
-    
-    
-    
-    //make a copy of the pointcloud recpc, using the inliers indices to determine 
-    //which points carry over to new cloud and get visualized
-    pcl::copyPointCloud(*recpc, *inliers, segpc);  
-
-
-    //for (int i=0; i<inliers->indices.size(); i++ ) {
-    //  segpc.at(inliers->indices[i]).y = line_count;
-    //} 
-
-    pcl::PointIndices::Ptr outliers (new pcl::PointIndices);
-
-    for (int j=0; j < 811; j++) {
-      if(std::find(inliers->indices.begin(), inliers->indices.end(), j) == inliers->indices.end()) {
-         outliers->indices.push_back(j);
-      }     
-    }
-    //set pointer to new point cloud 
-    pcl::copyPointCloud(*recpc, *outliers, *recpc);  
-
-    line_count++;
-
-  } while(foundLine && line_count < 10);
+  
+  //make a copy of the pointcloud recpc, using the inliers indices to determine 
+  //which points carry over to new cloud and get visualized
+  pcl::copyPointCloud(*recpc, *inliers, segpc);  
 
   //blank ROS PointCloud2 message to be filled in ros conversion
   sensor_msgs::PointCloud2 lined_pointcloud;  
@@ -93,7 +85,7 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
 
 //This is where we declare the node and its various interactions with other nodes
 int main(int argc, char **argv){
-
+  
   //initialize the node using arguments and with the name lidar_listener
   ros::init(argc, argv, "tranformed_listener");
   
