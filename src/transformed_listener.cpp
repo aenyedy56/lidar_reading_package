@@ -37,21 +37,39 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
   sensor_msgs::PointCloud2 segpc2; 
   sensor_msgs::PointCloud2 totalpc2; 
 
+
+  // taken from pointclouds.org documentation about planar segmentation
+  // this is segmentation
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  // Create the segmentation object
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+
+
+  // Optional
+  seg.setOptimizeCoefficients (true);
+  // Mandatory
+  seg.setModelType (pcl::SACMODEL_LINE); // looking for lines in the data
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setDistanceThreshold (0.02); // perhaps tune this to have higher room for error?
+  
+
   int line_count =0;
   bool foundLine = true;
   do {
-    // taken from pointclouds.org documentation about planar segmentation
-    // this is segmentation
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    // Create the segmentation object
-    pcl::SACSegmentation<pcl::PointXYZ> seg;
-    // Optional
-    seg.setOptimizeCoefficients (true);
-    // Mandatory
-    seg.setModelType (pcl::SACMODEL_LINE); // looking for lines in the data
-    seg.setMethodType (pcl::SAC_RANSAC);
-    seg.setDistanceThreshold (0.05); // perhaps tune this to have higher room for error?
+    // // taken from pointclouds.org documentation about planar segmentation
+    // // this is segmentation
+    // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+    // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+    // // Create the segmentation object
+    // pcl::SACSegmentation<pcl::PointXYZ> seg;
+
+    // // Optional
+    // seg.setOptimizeCoefficients (true);
+    // // Mandatory
+    // seg.setModelType (pcl::SACMODEL_LINE); // looking for lines in the data
+    // seg.setMethodType (pcl::SAC_RANSAC);
+    // seg.setDistanceThreshold (0.02); // perhaps tune this to have higher room for error?
     
     //set the pointcloud that will be source for segmenter
     seg.setInputCloud (recpc);
@@ -59,10 +77,10 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
     //segment the pointcloud, placing results in inliers and coefficients
     seg.segment (*inliers, *coefficients);
     
-    std::cerr << "Inliers " << line_count << std::endl;
-    for (int i=0; i<inliers->indices.size(); i++ ) {
-      std::cerr << inliers->indices[i] << " ";     
-    } 
+    std::cerr << "Coefficients " << line_count << std::endl;
+    for (int i=0; i<coefficients->values.size(); i++ ) {
+      std::cerr << coefficients->values[i] << " ";     
+    }
     std::cerr << std::endl;     
     
     //make a copy of the pointcloud recpc, using the inliers indices to determine 
@@ -91,6 +109,10 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
     line_count++;
 
   } while(foundLine && line_count < 10);
+  //while(foundLine && line_count < 1);
+  //if (!sac_->computeModel (0))
+  //!coefficients->values.empty() 
+
 
   //blank ROS PointCloud2 message to be filled in ros conversion
   sensor_msgs::PointCloud2 lined_pointcloud;  
@@ -101,7 +123,6 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
   //publish the segmented pointcloud
   //formerly:mod_transformed_pub.publish(lined_pointcloud); 
   mod_transformed_pub.publish(totalpc2);
-
 
 }
 
