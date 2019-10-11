@@ -13,6 +13,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <vector>
 #include <pcl/common/projection_matrix.h>
+#include <pcl/filters/extract_indices.h>
 
 // declare publisher to use in subscriber callback
 ros::Publisher mod_transformed_pub;
@@ -32,10 +33,10 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
   //set up blank pointcloud for copying over the segmented data
   pcl::PointCloud<pcl::PointXYZ> segpc;
   //blank pointcloud for storing all lines simultaneously
-  pcl::PointCloud<pcl::PointXYZ> totalpc;
+  pcl::PointCloud<pcl::PointXYZ> total_pc;
   //blank ROS msgs for segmented pointcloud and total pointcloud
-  sensor_msgs::PointCloud2 segpc2; 
-  sensor_msgs::PointCloud2 totalpc2; 
+  sensor_msgs::PointCloud2 sec_pc_message; 
+  sensor_msgs::PointCloud2 total_pc_message; 
 
 
   // taken from pointclouds.org documentation about planar segmentation
@@ -72,6 +73,7 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
     // seg.setDistanceThreshold (0.02); // perhaps tune this to have higher room for error?
     
     //set the pointcloud that will be source for segmenter
+    std::cerr << "Input size " << recpc->size();
     seg.setInputCloud (recpc);
     
     //segment the pointcloud, placing results in inliers and coefficients
@@ -87,42 +89,35 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
     //which points carry over to new cloud and get visualized
     pcl::copyPointCloud(*recpc, *inliers, segpc);  
 
-    pcl::toROSMsg(segpc, segpc2);
+    std::cerr << "results size " << segpc.size() << std::endl;
+     for (int i=0; i< inliers->indices.size(); i++ ) {
+       segpc.at(i).y = line_count;
+       //std::cerr << "item " << segpc.at(i).x << " " << segpc.at(i).z << " " << segpc.at(i).y << std::endl;
+     } 
 
-    pcl::concatenatePointCloud(totalpc2, segpc2, totalpc2);
+    total_pc += segpc;
 
-    // for (int i=0; i<inliers->indices.size(); i++ ) {
-    //   segpc.at(inliers->indices[i]).y = line_count;
-    // } 
+    // Filter out points that beloned to the line 
+    pcl::ExtractIndices<pcl::PointXYZ> extract; 
+    extract.setInputCloud(recpc);
+    extract.setIndices(inliers);
+    extract.setNegative(true);
+    extract.filter(*recpc);
 
-    pcl::PointIndices::Ptr outliers (new pcl::PointIndices);
+    line_count+=1;
 
-    for (int j=0; j < 811; j++) {
-      if(std::find(inliers->indices.begin(), inliers->indices.end(), j) == inliers->indices.end()) {
-         outliers->indices.push_back(j);
-      }
-      //std::cerr << "Loop Iteration: " << j << std::endl;     
-    }
-    //set pointer to new point cloud 
-    pcl::copyPointCloud(*recpc, *outliers, *recpc);  
-
-    line_count++;
-
-  } while(foundLine && line_count < 10);
+  } while(foundLine && line_count < 5 && recpc->size() > 10);
   //while(foundLine && line_count < 1);
   //if (!sac_->computeModel (0))
   //!coefficients->values.empty() 
 
+  total_pc.header.frame_id = "cloud";
 
-  //blank ROS PointCloud2 message to be filled in ros conversion
-  sensor_msgs::PointCloud2 lined_pointcloud;  
 
-  //convert segpc PointCloud into a ROS message PointCloud2 for publishing
-  pcl::toROSMsg(segpc, lined_pointcloud);
-
+  pcl::toROSMsg(total_pc, total_pc_message);
   //publish the segmented pointcloud
   //formerly:mod_transformed_pub.publish(lined_pointcloud); 
-  mod_transformed_pub.publish(totalpc2);
+  mod_transformed_pub.publish(total_pc_message);
 
 }
 

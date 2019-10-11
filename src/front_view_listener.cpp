@@ -13,6 +13,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <vector>
 #include <pcl/common/projection_matrix.h>
+#include <pcl/filters/extract_indices.h>
 
 // declare publisher to use in subscriber callback
 ros::Publisher mod_transformed_pub;
@@ -33,21 +34,27 @@ void point_transformed_CallBack(const sensor_msgs::PointCloud2& transformed_poin
   pcl::PointCloud<pcl::PointXYZ>::Ptr front_view (new pcl::PointCloud<pcl::PointXYZ> ());
 
   int angles[271];
-  int start_angle = 180;
-  int end_angle = 225;
-
-  for (int i = 0; i<271; i++) {
+    for (int i = 0; i<271; i++) {
     angles[i]= i*3;
   }
+  int start_angle = 135;
+  int end_angle = 225;
 
-  for (int i=135*3; i<225*3; i++) {
-    pcl::PointXYZ p = recpc->at(i);
-    front_view->push_back(p); 
-  }  
+  std::cerr << "s " << angles[start_angle] << " e " << angles[end_angle] << std::endl;
+
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
+
+  for (int i = angles[start_angle]; i < angles[end_angle]; i++) {
+      inliers->indices.push_back(i);
+  }
+
+  pcl::ExtractIndices<pcl::PointXYZ> extract; 
+  extract.setInputCloud(recpc);
+  extract.setIndices(inliers);
+  extract.setNegative(false);
+  extract.filter(*front_view);
 
   front_view->header.frame_id = "cloud";
-  front_view->height = 1;
-  front_view->width = 270;
 
   //blank ROS PointCloud2 message to be filled in ros conversion
   sensor_msgs::PointCloud2 lined_pointcloud;  
@@ -69,6 +76,7 @@ int main(int argc, char **argv){
   //set up the node's subscriber and specify what topic it is subscribing to (here, "cloud"), the queue of waiting data it can handle (here, 1 for best results), and the operation that will be run when the message is received (here, pointCloudCallBack, the operation we declared at the top of the file) 
   ros::NodeHandle nh;
   ros::Subscriber transformed_sub = nh.subscribe("modified_pointcloud", 1, point_transformed_CallBack);
+
   
   //setup the node's publisher and specify the topic it will publish, with a queue of 1 for best results
   mod_transformed_pub = nh.advertise<sensor_msgs::PointCloud2>("front_view", 1);

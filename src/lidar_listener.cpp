@@ -12,6 +12,16 @@ ros::Publisher mod_cloud_pub;
 void pointCloudCallBack(const sensor_msgs::PointCloud2& lidar_pointcloud){
   //This callback currently writes that it found th-
   ROS_INFO("Received pointcloud");
+  pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
+  
+  //convert transformed_pointcloud (PointCloud2 msg) to recpc (PointCloud obj)
+  pcl::fromROSMsg(lidar_pointcloud, *recpc);
+
+  float x = recpc->points[0].x;
+  float y = recpc ->points[0].y;
+  float z = recpc->points[0].z;
+  
+  ROS_INFO("%f, %f, %f", x, y, z);
   //regurgitate the data from the pointcloud received from the lidar
 
   //rotation matrix to use global coordinates (get z)
@@ -43,6 +53,7 @@ int main(int argc, char **argv){
   //set up the node's subscriber and specify what topic it is subscribing to (here, "cloud"), the queue of waiting data it can handle (here, 1 for best results), and the operation that will be run when the message is received (here, pointCloudCallBack, the operation we declared at the top of the file) 
   ros::NodeHandle n;
   ros::Subscriber lidar_sub = n.subscribe("cloud", 1, pointCloudCallBack);
+  ros::Subscriber mock_lidar_sub = n.subscribe("mock_cloud", 1, pointCloudCallBack);
   
   //setup the node's publisher and specify the topic it will publish, with a queue of 1 for best results
   mod_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("modified_pointcloud", 1);
