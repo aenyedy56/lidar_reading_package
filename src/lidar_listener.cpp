@@ -5,61 +5,28 @@
 #include <pcl/console/parse.h>
 #include <pcl/point_types.h>
 #include <pcl_ros/transforms.h>
+#include <iostream>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <vector>
+#include <pcl/common/projection_matrix.h>
+#include <pcl/filters/extract_indices.h>
+#include "PointCloudSegmenter.cpp"
 
-ros::Publisher mod_cloud_pub;
-
-//this is the operation that occurs when the subscriber receives the pointcloud from the SICK publisher
-void pointCloudCallBack(const sensor_msgs::PointCloud2& lidar_pointcloud){
-  //This callback currently writes that it found th-
-  ROS_INFO("Received pointcloud");
-  pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
-  
-  //convert transformed_pointcloud (PointCloud2 msg) to recpc (PointCloud obj)
-  pcl::fromROSMsg(lidar_pointcloud, *recpc);
-
-  float x = recpc->points[0].x;
-  float y = recpc ->points[0].y;
-  float z = recpc->points[0].z;
-  
-  ROS_INFO("%f, %f, %f", x, y, z);
-  //regurgitate the data from the pointcloud received from the lidar
-
-  //rotation matrix to use global coordinates (get z)
-  //use a rotation about x to convert the coordinates
-  Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
-  float theta = -1*M_PI/2; //angle of rotations in radians
-  transform_1(1,1) = std::cos(theta);
-  transform_1(1,2) = -sin(theta);
-  transform_1(2,1) = sin(theta);
-  transform_1(2,2) = std::cos(theta);
-
-  const Eigen::Matrix4f transform = transform_1;
-  
-  //set up blank pointcloud to store transformed pointcloud
-  sensor_msgs::PointCloud2 modified_pointcloud;
-  
-  //apply transform
-  pcl_ros::transformPointCloud (transform, lidar_pointcloud, modified_pointcloud);  
-  
-  //publish modified pointcloud
-  mod_cloud_pub.publish(modified_pointcloud);
-}
 
 //This is where we declare the node and its various interactions with other nodes
 int main(int argc, char **argv){
   //initialize the node using arguments and with the name lidar_listener
   ros::init(argc, argv, "lidar_listener");
-  
-  //set up the node's subscriber and specify what topic it is subscribing to (here, "cloud"), the queue of waiting data it can handle (here, 1 for best results), and the operation that will be run when the message is received (here, pointCloudCallBack, the operation we declared at the top of the file) 
+  float theta = -1*M_PI/2;
   ros::NodeHandle n;
-  ros::Subscriber lidar_sub = n.subscribe("cloud", 1, pointCloudCallBack);
-  ros::Subscriber mock_lidar_sub = n.subscribe("mock_cloud", 1, pointCloudCallBack);
-  
-  //setup the node's publisher and specify the topic it will publish, with a queue of 1 for best results
-  mod_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("modified_pointcloud", 1);
-  
+
+  // Create class that listens to lidar messages and published the filtered and segmented data
+  PointCloudSegmenter segmenter(135, 225, theta, n);
   //keep running node to obtain messages
   ros::spin();
-
   return 0;
 }
