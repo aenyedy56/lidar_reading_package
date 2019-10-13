@@ -7,6 +7,15 @@
 #include <pcl_ros/transforms.h>
 #include <iostream>
 #include <vector>
+#include <pcl_ros/transforms.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/common/projection_matrix.h>
+#include <pcl/filters/extract_indices.h>
+
 
 class PointCloudSegmenter {
  
@@ -24,8 +33,8 @@ class PointCloudSegmenter {
     Eigen::Matrix4f transform;
 
   PointCloudSegmenter(int sa, int ea, float th, ros::NodeHandle node) {
-    startAngle = *sa;
-    endAngle = *ea;
+    startAngle = sa;
+    endAngle = ea;
     theta = th; 
 
     for (int i = 0; i<271; i++) {
@@ -50,7 +59,6 @@ class PointCloudSegmenter {
    
     this->mod_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("segmented_pointcloud", 1);
     this->rotated_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("rotated_cloud", 1);
-
   }
 
   // This function will perform 3 operations 
@@ -73,7 +81,7 @@ class PointCloudSegmenter {
 
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
 
-    for (int i = angles[startAngle]; i < angles[endAngel]; i++) {
+    for (int i = angles[startAngle]; i < angles[endAngle]; i++) {
         inliers->indices.push_back(i);
     }
 
