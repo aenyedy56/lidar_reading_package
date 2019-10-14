@@ -30,15 +30,15 @@ public:
 
 	    std::cerr << "Min " << min.y << " Max " << max.y << std::endl;
 
-	    if (max.y - min.y < 3) {
-	    	std::cerr << "Not enough lines to extract starir" << std::endl;
+	    if (max.y - min.y < 2) {
+	    	std::cerr << "Not enough lines to extract stairs" << std::endl;
 	    	return;
 	    }
 
-
+	    std::cerr << "Extracting stairs" << std::endl;
   		lidar_reading_package::Stairs stairs_msg;
 
-	    for (int i = min.y+1; i < max.y-1; i++) {
+	    for (int i = min.y+1; i <= max.y-1; i++) {
 
   			lidar_reading_package::Stair s;
 
