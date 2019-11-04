@@ -16,6 +16,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/common/projection_matrix.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/point_representation.h>
 
 
 class PointCloudSegmenter {
@@ -89,14 +90,14 @@ class PointCloudSegmenter {
 	// set up xyz message 
 	std_msgs::Float32MultiArray xyz_msg;	
 
-	float vec[points.size()] = {}
+	float vec[recpc->points.size()] = {};
+//recpc->points.size()
 	// access xyz data from pointcloud
-	int i;
-	for(i = 0; i < recpc->points.size(); i++){
-		vec = recpc->points[i];
+	for(int i = 0; i < recpc->points.size(); i++){
+		pcl::DefaultPointRepresentation<pcl::PointXYZ>::copyToFloatArray(recpc->points[i],vec);
 		if(i == 0){
 			xyz_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
-			xyz_msg.layout.dim[0].size = vec.size();
+			xyz_msg.layout.dim[0].size = 3;
 			xyz_msg.layout.dim[0].stride = 1;
 			xyz_msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
 		}
