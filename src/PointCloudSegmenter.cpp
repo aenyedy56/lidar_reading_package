@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
+#include "std_msgs/Float32MultiArray.h"
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/console/parse.h>
@@ -15,6 +16,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/common/projection_matrix.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/point_representation.h>
 
 
 class PointCloudSegmenter {
@@ -27,6 +29,7 @@ class PointCloudSegmenter {
     float theta;
     ros::Publisher mod_cloud_pub;
     ros::Publisher rotated_cloud_pub;
+	ros::Publisher xyz_array_pub;
     ros::Subscriber mock_point_cloud_sub;
     ros::Subscriber point_cloud_sub;
     ros::Subscriber modified_point_cloud_sub;
@@ -59,6 +62,7 @@ class PointCloudSegmenter {
    
     this->mod_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("segmented_pointcloud", 1);
     this->rotated_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("rotated_cloud", 1);
+    this->xyz_array_pub = node.advertise<std_msgs::Float32MultiArray>("xyz_data", 1);
   }
 
   void unrotatedCallback(const sensor_msgs::PointCloud2& lidar_pointcloud){
@@ -74,12 +78,46 @@ class PointCloudSegmenter {
   //  3) Segment the filtered lidar scan to line segments using RANSC placing each line
   //        into a different y plane 
   void lidarListenerCallback(const sensor_msgs::PointCloud2& lidar_pointcloud){
-    //This callback currently writes that it found th-
+    //This callback currently writes that it found th- *static*
     ROS_INFO("Received pointcloud");
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
     
+<<<<<<< HEAD
     pcl::fromROSMsg(lidar_pointcloud, *recpc);
+=======
+    sensor_msgs::PointCloud2 rotated_pc;
+    //ros-bag has already rotated data, comment this out for now 
+    pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
+
+    // rosbag has already rotated data, change it back to rotated-pc later
+    pcl::fromROSMsg(rotated_pc, *recpc);
+	
+
+    // PUBLISHING ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
+    rotated_cloud_pub.publish(rotated_pc);
+
+	// set up xyz message 
+	std_msgs::Float32MultiArray xyz_msg;	
+
+	float vec[recpc->points.size()] = {};
+//recpc->points.size()
+	// access xyz data from pointcloud
+	for(int i = 0; i < recpc->points.size(); i++){
+		pcl::DefaultPointRepresentation<pcl::PointXYZ>::copyToFloatArray(recpc->points[i],vec);
+		if(i == 0){
+			xyz_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+			xyz_msg.layout.dim[0].size = 3;
+			xyz_msg.layout.dim[0].stride = 1;
+			xyz_msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
+		}
+		xyz_msg.data.insert(xyz_msg.data.end(), vec.begin(), vec.end());
+	}
+
+	xyz_array_pub.publish(xyz_msg);
+    // END PUBLISHING OF ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
+
+>>>>>>> e2cc498911cf37dcdc229800d06fcc37b2371594
 
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
 
