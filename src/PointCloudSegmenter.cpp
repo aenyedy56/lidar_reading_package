@@ -83,9 +83,8 @@ class PointCloudSegmenter {
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
     
-<<<<<<< HEAD
     pcl::fromROSMsg(lidar_pointcloud, *recpc);
-=======
+
     sensor_msgs::PointCloud2 rotated_pc;
     //ros-bag has already rotated data, comment this out for now 
     pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
@@ -117,7 +116,6 @@ class PointCloudSegmenter {
 	xyz_array_pub.publish(xyz_msg);
     // END PUBLISHING OF ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
 
->>>>>>> e2cc498911cf37dcdc229800d06fcc37b2371594
 
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
 
