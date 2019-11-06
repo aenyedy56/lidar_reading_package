@@ -1,3 +1,3 @@
-float64 distance
+float64 distance_to_stair
 float64 height
 float64 depth

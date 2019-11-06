@@ -52,13 +52,20 @@ class PointCloudSegmenter {
     std::cerr << "Subscribing topics" << std::endl;
 
 
-    this->modified_point_cloud_sub = node.subscribe("modified_pointcloud", 100, &PointCloudSegmenter::lidarListenerCallback, this);
+    this->modified_point_cloud_sub = node.subscribe("modified_pointcloud", 100, &PointCloudSegmenter::unrotatedCallback, this);
     this->point_cloud_sub = node.subscribe("cloud", 100, &PointCloudSegmenter::lidarListenerCallback, this);
     this->mock_point_cloud_sub = node.subscribe("mock_cloud", 100, &PointCloudSegmenter::lidarListenerCallback, this);
     
    
     this->mod_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("segmented_pointcloud", 1);
     this->rotated_cloud_pub = node.advertise<sensor_msgs::PointCloud2>("rotated_cloud", 1);
+  }
+
+  void unrotatedCallback(const sensor_msgs::PointCloud2& lidar_pointcloud){
+    sensor_msgs::PointCloud2 rotated_pc;
+    pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
+    lidarListenerCallback(rotated_pc);
+
   }
 
   // This function will perform 3 operations 
@@ -72,11 +79,6 @@ class PointCloudSegmenter {
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
     
-    sensor_msgs::PointCloud2 rotated_pc;
-    //ros-bag has already rotated data, comment this out for now 
-    //pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
-    
-    // rosbag has already rotated data, change it back to rotated-pc later
     pcl::fromROSMsg(lidar_pointcloud, *recpc);
 
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
