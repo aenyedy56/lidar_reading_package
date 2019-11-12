@@ -19,10 +19,12 @@ public:
     ros::Subscriber segmented_point_cloud_sub;
 
     ros::Publisher stair_pub;
+    ros::Publisher viz_pub;	
 
     StairParameterExtractor(ros::NodeHandle node) {
     	segmented_point_cloud_sub = node.subscribe("segmented_pointcloud",1, &StairParameterExtractor::segmentedCloudCallback, this);
     	stair_pub = node.advertise<lidar_reading_package::Stairs>("stairs", 1);
+	viz_pub = node.advertise<sensor_msgs::PointCloud2>("stair_point_cloud", 1);
     
     }
 
@@ -43,7 +45,7 @@ public:
 	    std::cerr << "Extracting stairs" << std::endl;
   		lidar_reading_package::Stairs stairs_msg;
 
-    	pcl::PointCloud<pcl::PointXYZ>::Ptr approach (new pcl::PointCloud<pcl::PointXYZ> ());
+		pcl::PointCloud<pcl::PointXYZ>::Ptr approach (new pcl::PointCloud<pcl::PointXYZ> ());
 		pcl::PointCloud<pcl::PointXYZ>::Ptr up (new pcl::PointCloud<pcl::PointXYZ> ());
 		pcl::PointCloud<pcl::PointXYZ>::Ptr depth (new pcl::PointCloud<pcl::PointXYZ> ());
 		
@@ -52,6 +54,8 @@ public:
 		pcl::ModelCoefficients::Ptr depth_coefficients (new pcl::ModelCoefficients);
 
 
+		pcl::PointCloud<pcl::PointXYZ>::Ptr stair_pc;
+    
 	    for (int i = min.y+1; i <= max.y-1; i++) {
 
   			lidar_reading_package::Stair s;
@@ -70,6 +74,9 @@ public:
 				|| !angle_between(approach_coefficients, depth_coefficients, 2.5, -2.5)){
 				continue;
 			}
+		    	stair_pc += approach;
+		    	stair_pc += up;
+		        stair_pc += depth;
 
    			pcl::PointXYZ minApproach, maxApproach;
    			pcl::getMinMax3D(*approach, minApproach, maxApproach);
@@ -92,9 +99,11 @@ public:
    			stairs_msg.stairs.push_back(s);
        	}
   		std::cerr << "Publishing message" << std::endl;
-
+		stair_pc.header.frame_id = "cloud";
+		sensor_msgs::PointCloud2 stair_pc_msg; 
+		pcl::toROSMsg(stair_pc, stair_pc_msg);
   		stair_pub.publish(stairs_msg);
-
+		viz_pub.publish(stair_pc_msg);
   	}
 
   	void get_line_coefficient(pcl::PointCloud<pcl::PointXYZ>::Ptr src_point_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr dst_point_cloud, pcl::ModelCoefficients::Ptr coefficients, int i) {
