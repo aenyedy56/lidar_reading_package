@@ -54,7 +54,7 @@ public:
 		pcl::ModelCoefficients::Ptr depth_coefficients (new pcl::ModelCoefficients);
 
 
-		pcl::PointCloud<pcl::PointXYZ>::Ptr stair_pc;
+		pcl::PointCloud<pcl::PointXYZ> stair_pc;
     
 	    for (int i = min.y+1; i <= max.y-1; i++) {
 
@@ -74,9 +74,9 @@ public:
 				|| !angle_between(approach_coefficients, depth_coefficients, 2.5, -2.5)){
 				continue;
 			}
-		    	stair_pc += approach;
-		    	stair_pc += up;
-		        stair_pc += depth;
+		    	stair_pc += *approach;
+		    	stair_pc += *up;
+		        stair_pc += *depth;
 
    			pcl::PointXYZ minApproach, maxApproach;
    			pcl::getMinMax3D(*approach, minApproach, maxApproach);
@@ -100,6 +100,9 @@ public:
        	}
   		std::cerr << "Publishing message" << std::endl;
 		stair_pc.header.frame_id = "cloud";
+		for (int i = 0; i < stair_pc.size(); i++) {
+			stair_pc[i].y=0;
+		}
 		sensor_msgs::PointCloud2 stair_pc_msg; 
 		pcl::toROSMsg(stair_pc, stair_pc_msg);
   		stair_pub.publish(stairs_msg);

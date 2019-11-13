@@ -68,6 +68,9 @@ class PointCloudSegmenter {
   void unrotatedCallback(const sensor_msgs::PointCloud2& lidar_pointcloud){
     sensor_msgs::PointCloud2 rotated_pc;
     pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
+    
+    // PUBLISHING ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
+    rotated_cloud_pub.publish(rotated_pc);
     lidarListenerCallback(rotated_pc);
 
   }
@@ -85,32 +88,23 @@ class PointCloudSegmenter {
     
     pcl::fromROSMsg(lidar_pointcloud, *recpc);
 
-    sensor_msgs::PointCloud2 rotated_pc;
-    //ros-bag has already rotated data, comment this out for now 
-    pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
-
-    // rosbag has already rotated data, change it back to rotated-pc later
-    pcl::fromROSMsg(rotated_pc, *recpc);
-	
-
-    // PUBLISHING ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
-    rotated_cloud_pub.publish(rotated_pc);
-
 	// set up xyz message 
 	std_msgs::Float32MultiArray xyz_msg;	
 
 	float vec[recpc->points.size()] = {};
+  float* vecp = &vec[0];
 //recpc->points.size()
 	// access xyz data from pointcloud
 	for(int i = 0; i < recpc->points.size(); i++){
-		pcl::DefaultPointRepresentation<pcl::PointXYZ>::copyToFloatArray(recpc->points[i],vec);
+		pcl::DefaultPointRepresentation<pcl::PointXYZ> p; 
+    p.copyToFloatArray(recpc->points[i], vecp);
 		if(i == 0){
 			xyz_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
 			xyz_msg.layout.dim[0].size = 3;
 			xyz_msg.layout.dim[0].stride = 1;
 			xyz_msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
 		}
-		xyz_msg.data.insert(xyz_msg.data.end(), vec.begin(), vec.end());
+		xyz_msg.data.insert(xyz_msg.data.end(), &vec[0], &vec[recpc->points.size()-1]);
 	}
 
 	xyz_array_pub.publish(xyz_msg);
