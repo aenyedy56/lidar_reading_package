@@ -97,23 +97,26 @@ public:
 
    			std::cerr << "Distance " << s.distance_to_stair << " Height " << s.height << " depth " << s.depth << std::endl;
    			stairs_msg.stairs.push_back(s);
+   			break;
        	}
-  		std::cerr << "Publishing message" << std::endl;
-		stair_pc.header.frame_id = "cloud";
-		for (int i = 0; i < stair_pc.size(); i++) {
-			stair_pc[i].y=0;
+       	if(stair_pc.size() > 0) {
+	  		std::cerr << "Publishing message" << std::endl;
+			stair_pc.header.frame_id = "cloud";
+			for (int i = 0; i < stair_pc.size(); i++) {
+				stair_pc[i].y=0;
+			}
+			sensor_msgs::PointCloud2 stair_pc_msg; 
+			pcl::toROSMsg(stair_pc, stair_pc_msg);
+	  		stair_pub.publish(stairs_msg);
+			viz_pub.publish(stair_pc_msg);
 		}
-		sensor_msgs::PointCloud2 stair_pc_msg; 
-		pcl::toROSMsg(stair_pc, stair_pc_msg);
-  		stair_pub.publish(stairs_msg);
-		viz_pub.publish(stair_pc_msg);
   	}
 
   	void get_line_coefficient(pcl::PointCloud<pcl::PointXYZ>::Ptr src_point_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr dst_point_cloud, pcl::ModelCoefficients::Ptr coefficients, int i) {
 	   	pcl::CropBox<pcl::PointXYZ> segmentFilter;
 		segmentFilter.setInputCloud(src_point_cloud);
-		segmentFilter.setMin(Eigen::Vector4f(-1000, i,-1000, 1.0));
-		segmentFilter.setMax(Eigen::Vector4f(1000, i,1000, 1.0));
+		segmentFilter.setMin(Eigen::Vector4f(-10000, i,-10000, 1.0));
+		segmentFilter.setMax(Eigen::Vector4f(10000, i,10000, 1.0));
 		segmentFilter.filter(*dst_point_cloud);
 	
 		// re-run the segmentation to fit a line to those points
@@ -123,7 +126,7 @@ public:
 		seg.setOptimizeCoefficients (true);
 		// Mandatory
 		seg.setModelType (pcl::SACMODEL_LINE); 
-		seg.setDistanceThreshold (0.02);
+		seg.setDistanceThreshold (0.01);
 		pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
  		std::cerr << "Input size " << dst_point_cloud->size() << std::endl;
 		seg.setInputCloud (dst_point_cloud);
