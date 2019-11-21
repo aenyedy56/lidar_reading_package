@@ -23,7 +23,7 @@ ros::Publisher stair_xyz_pub;
 
 
 void stairCloudCallback(const sensor_msgs::PointCloud2& stair_pointcloud){
-
+	ROS_INFO("Recieved stair pointcloud");
     pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
     
     pcl::fromROSMsg(stair_pointcloud, *recpc);
@@ -44,9 +44,14 @@ void stairCloudCallback(const sensor_msgs::PointCloud2& stair_pointcloud){
 			xyz_msg.layout.dim[0].stride = 1;
 			xyz_msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
 		}
+		std::cerr << "Point " << i << ": " << 
+					" x: " << vecp[0] << 
+					" y: " << vecp[1] << 
+					" z: " << vecp[2] << std::endl;
+
 		xyz_msg.data.insert(xyz_msg.data.end(), &vec[0], &vec[recpc->points.size()-1]);
 	}
-
+	ROS_INFO("Publishing XYZ of stair pointcloud");
 	stair_xyz_pub.publish(xyz_msg);
     // END PUBLISHING OF ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
 
