@@ -12,10 +12,12 @@ class Person(object):
     Creates a person for accessing data and makings simplified plots
     """
 
-    def __init__(self, leg):
-        self._thigh_length = leg.leg_length*0.48
-        self._shank_length = leg.leg_length*0.52
-        self._foot_length = leg.foot_length
+    # leg_length is float length of leg in mm, foot_length is float length of foot in mm, height is float height of participant in mm
+    def __init__(self, leg_length, foot_length:
+        self._thigh_length = leg_length*0.48
+        self._shank_length = leg_length*0.52
+        # self._foot_length = height*(25.4/167.64) # calculated using ratio from https://www.livestrong.com/article/491821-height-to-foot-size-ratio/ 
+        self._foot_length = foot_length # calculated using ratio from 
         self._left_leg_pos = []
         self._right_leg_pos = []
         q1 = symbols('q1');
