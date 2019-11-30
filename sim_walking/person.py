@@ -1,7 +1,10 @@
+#!/usr/bin/env python
 import numpy as np
-import math
+#import math
 from numpy import *
 from math import sqrt
+from math import sin
+from math import cos
 from sympy import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -13,18 +16,18 @@ class Person(object):
     """
 
     # leg_length is float length of leg in mm, foot_length is float length of foot in mm, height is float height of participant in mm
-    def __init__(self, leg_length, foot_length:
+    def __init__(self, leg_length, foot_length):
         self._thigh_length = leg_length*0.48
         self._shank_length = leg_length*0.52
         # self._foot_length = height*(25.4/167.64) # calculated using ratio from https://www.livestrong.com/article/491821-height-to-foot-size-ratio/ 
-        self._foot_length = foot_length # calculated using ratio from 
+        self._foot_length = foot_length  
         self._left_leg_pos = []
         self._right_leg_pos = []
-        q1 = symbols('q1');
-        q2 = symbols('q2');
-        q3 = symbols('q3');
-        self._T01 = [[math.cos(q1), -math.sin(q1), 0, -self._foot_length*math.cos(q1)],
-                     [math.sin(q1), math.cos(q1), 0, -self._foot_length*math.sin(q1)],
+        q1 = symbols('q1')
+        q2 = symbols('q2')
+        q3 = symbols('q3')
+        self._T01 = [[math.cos(q1), -1*math.sin(q1), 0, -1*self._foot_length*math.cos(q1)],
+                     [math.sin(q1), math.cos(q1), 0, -1*self._foot_length*math.sin(q1)],
                      [0, 0, 1, 0],
                      [0, 0, 0, 1]]
         self._T12 = [[math.cos(q2), -math.sin(q2), 0, -self._foot_length * math.cos(q2)],
