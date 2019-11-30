@@ -22,22 +22,45 @@
 #include <pcl/common/common.h>
 #include <tuple>
 
+
+// ROS node that processes a raw planar lidar message 
+// from a sensor (mocked or real)
+// It processes the message in following ways
+// 1) Rotates the lidar data by theta 
+//     default rotation is to put the data in the X-Z plane
+// 2) Filters the lidar data do it only has the data for points
+//     within the angle range sa - ea
+// 3) Runs the pcl RANSAC line fitter of the remaing data
+//     pulling each identified line segment into a sepearte slice
+//     in the y plane. 
+// 4) Sorts the data so the y sclices are sorted by the lowest x point
+// 
+// It takes an average of N (configurable) lidar scans to remove noise
 class PointCloudSegmenter {
  
  public:
-
+    // used to map lidar data array to logical angles 
     int angles[270];
+    
+    // logical angle range to filter the lidar down to 
     int startAngle;
     int endAngle;
+
+    // default rotation angle 
     float theta;
+
+    // publishers for debuging different steps of the data 
     ros::Publisher mod_cloud_pub;
     ros::Publisher rotated_cloud_pub;
-	ros::Publisher xyz_array_pub;
+	  ros::Publisher xyz_array_pub;
+
+    // subscribers for mocked and live data 
     ros::Subscriber mock_point_cloud_sub;
     ros::Subscriber point_cloud_sub;
     ros::Subscriber modified_point_cloud_sub;
     Eigen::Matrix4f transform;
 
+    // buffer for lidar scans 
     pcl::PointCloud<pcl::PointXYZ> pc_buffer;
     int pc_buffer_count = 1;
 
@@ -71,6 +94,7 @@ class PointCloudSegmenter {
     this->xyz_array_pub = node.advertise<std_msgs::Float32MultiArray>("xyz_data", 1);
   }
 
+  // Method that rotates the point cloud 
   void unrotatedCallback(const sensor_msgs::PointCloud2& lidar_pointcloud){
     sensor_msgs::PointCloud2 rotated_pc;
     pcl_ros::transformPointCloud(this->transform, lidar_pointcloud, rotated_pc);
@@ -93,30 +117,6 @@ class PointCloudSegmenter {
     pcl::PointCloud<pcl::PointXYZ>::Ptr recpc (new pcl::PointCloud<pcl::PointXYZ> ());
     
     pcl::fromROSMsg(lidar_pointcloud, *recpc);
-
-/*
-	// set up xyz message 
-	std_msgs::Float32MultiArray xyz_msg;	
-
-	float vec[recpc->points.size()] = {};
-  float* vecp = &vec[0];
-//recpc->points.size()
-	// access xyz data from pointcloud
-	for(int i = 0; i < recpc->points.size(); i++){
-		pcl::DefaultPointRepresentation<pcl::PointXYZ> p; 
-    p.copyToFloatArray(recpc->points[i], vecp);
-		if(i == 0){
-			xyz_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
-			xyz_msg.layout.dim[0].size = 3;
-			xyz_msg.layout.dim[0].stride = 1;
-			xyz_msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
-		}
-		xyz_msg.data.insert(xyz_msg.data.end(), &vec[0], &vec[recpc->points.size()-1]);
-	}
-
-	xyz_array_pub.publish(xyz_msg);
-    // END PUBLISHING OF ROTATED XYZ DATA FOR USE IN MATPLOTLIB VISUALIZATION
-  */
  
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices());
     for (int i = 405; i < 675; i++) {
@@ -218,7 +218,7 @@ class PointCloudSegmenter {
     }
   }
 
-
+    // Method to sort the Y slices of a point cloud by the lowest X point. 
     void sort_by_x_dist(pcl::PointCloud<pcl::PointXYZ>::Ptr src_point_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr dst_point_cloud) {
       pcl::PointXYZ min, max;
       pcl::getMinMax3D(*src_point_cloud, min, max);
