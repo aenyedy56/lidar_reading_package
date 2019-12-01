@@ -5,7 +5,7 @@ from dmp_experiments.Python.DMP_runner import DMP_runner
 import matplotlib.pyplot as plt
 from decimal import *
 
-file = '/home/rhosea/catkin_ws/src/lidar_reading_package/sim_walking/dmp_experiments/Python/leg_info.csv'
+file = '/home/rhosea/catkin_ws/src/lidar_reading_package/sim_walking/leg_info.csv'
 lhip_dmp = 'lhip_dmp'
 lkne_dmp = 'lkne_dmp'
 lank_dmp = 'lank_dmp'
