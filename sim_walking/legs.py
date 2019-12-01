@@ -62,12 +62,12 @@ rthi_traj = get_marker_traj(rthi_frame)
 rkne_traj = get_marker_traj(rkne_frame)
 rtoe_traj = get_marker_traj(rtoe_frame)
 
-ltoe_traj = zero_calibrate_traj(ltoe_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
-lkne_traj = zero_calibrate_traj(lkne_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
-lhip_traj = zero_calibrate_traj(lthi_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
-rtoe_traj = zero_calibrate_traj(rtoe_traj, rtoe_traj[0, 0], rtoe_traj[1, 0], rtoe_traj[2, 0])
-rkne_traj = zero_calibrate_traj(rkne_traj, rtoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
-rhip_traj = zero_calibrate_traj(rthi_traj, rtoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
+# ltoe_traj = zero_calibrate_traj(ltoe_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
+# lkne_traj = zero_calibrate_traj(lkne_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
+# lhip_traj = zero_calibrate_traj(lthi_traj, ltoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
+# rtoe_traj = zero_calibrate_traj(rtoe_traj, rtoe_traj[0, 0], rtoe_traj[1, 0], rtoe_traj[2, 0])
+# rkne_traj = zero_calibrate_traj(rkne_traj, rtoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
+# rhip_traj = zero_calibrate_traj(rthi_traj, rtoe_traj[0, 0], ltoe_traj[1, 0], ltoe_traj[2, 0])
 
 # fig = plt.figure()
 # plt.plot(lhip_traj[1], lhip_traj[2])
@@ -100,16 +100,18 @@ right_angles = [right_hip_angles,
           right_knee_angles,
           right_ankle_angles]
 
-plot_leg(left_angles, lthi_traj)
+# plot_leg(left_angles, lthi_traj)
 csvwriter = csv.writer(open('leg_info.csv', 'w'), delimiter=',', quotechar='|')
 ltoe_size = ltoe_traj.shape
-for m in range(0, ltoe_size[0]):
-    # for n in range(0, ltoe_size[1]):
-    csvwriter.writerow(ltoe_traj[m])
+# for m in range(0, ltoe_size[0]):
+#     # for n in range(0, ltoe_size[1]):
+#     csvwriter.writerow(ltoe_traj[m])
 
 
 # for n in right_toe_traj:
 #     csvwriter.writerow(n)
 
-# for x in angles:
-#     csvwriter.writerow(x)
+for x in left_angles:
+    csvwriter.writerow(x)
+for y in right_angles:
+    csvwriter.writerow(y)
