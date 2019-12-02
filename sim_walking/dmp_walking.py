@@ -5,7 +5,7 @@ from dmp_experiments.Python.DMP_runner import DMP_runner
 import matplotlib.pyplot as plt
 from decimal import *
 
-file = '/home/rhosea/catkin_ws/src/lidar_reading_package/sim_walking/leg_info.csv'
+file = 'leg_info.csv'
 lhip_dmp = 'lhip_dmp'
 lkne_dmp = 'lkne_dmp'
 lank_dmp = 'lank_dmp'
@@ -79,6 +79,7 @@ time = np.arange(0,tau+dt,dt)
 plt.title("2-D DMP demonstration")
 plt.xlabel("Time(t)")
 plt.ylabel("Angle Position(deg)")
+print("This is a single angle output");
 print(Y)
 plt.plot(time[1:4993],T_lhip[0])
 plt.plot(time,Y)

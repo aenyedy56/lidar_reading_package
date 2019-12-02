@@ -18,6 +18,7 @@ class Person(object):
     # leg_length is float length of leg in mm, foot_length is float length of foot in mm, height is float height of participant in mm
     def __init__(self, leg_length, foot_length):
         # biometric data
+        self._leg_lenth = leg_length;
         self._thigh_length = leg_length*0.48
         self._shank_length = leg_length*0.52
         self._foot_length = foot_length  
