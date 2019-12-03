@@ -108,7 +108,7 @@ class Person(object):
             self._right_hip_pos = [self._left_hip_pos[0], self._right_hip_pos[1], self._left_hip_pos[2]] # hip positions remain constant between both legs
             self._right_knee_pos = [self._right_hip_pos[0] - self._thigh_length*math.sin(jangles[3]), self._right_hip_pos[1], self._right_hip_pos[2] - self._thigh_length*math.cos(jangles[3])]
             self._right_ankle_pos = [self._right_knee_pos[0] - self._shank_length*math.sin(jangles[3]-jangles[4]), self._right_hip_pos[1], self._right_knee_pos[2] - self._shank_length*math.cos(jangles[3]-jangles[4])]
-            self._right_toe_pos = [self._thigh_length*math.cos(jangles[3]) + self._shank_length*math.cos(jangles[3]-jangles[4]) - self._foot_length*math.sin(jangles[3]-jangles[4]-jangles[5]), self._right_hip_pos[1], self._thigh_length*math.sin(jangles[3]) + self._shank_length*math.sin(jangles[3]-jangles[4]) - self._foot_length*math.cos(jangles[3]-jangles[4]-jangles[5])]
+            #self._right_toe_pos = [self._thigh_length*math.cos(jangles[3]) + self._shank_length*math.cos(jangles[3]-jangles[4]) - self._foot_length*math.sin(jangles[3]-jangles[4]-jangles[5]), self._right_hip_pos[1], self._thigh_length*math.sin(jangles[3]) + self._shank_length*math.sin(jangles[3]-jangles[4]) - self._foot_length*math.cos(jangles[3]-jangles[4]-jangles[5])]
 
         # else, right foot is trailing, so use right foot as origin
         else:
@@ -121,7 +121,7 @@ class Person(object):
             self._left_hip_pos = [self._right_hip_pos[0], self._left_hip_pos[1], self._right_hip_pos[2]] # hip positions remain constant between both legs
             self._left_knee_pos = [self._left_hip_pos[0] - self._thigh_length*math.sin(jangles[0]), self._left_hip_pos[1], self._left_hip_pos[2] - self._thigh_length*math.cos(jangles[0])]
             self._left_ankle_pos = [self._left_knee_pos[0] - self._shank_length*math.sin(jangles[0]-jangles[1]), self._left_hip_pos[1], self._left_knee_pos[2] - self._shank_length*math.cos(jangles[0]-jangles[1])]
-            self._left_toe_pos = [self._thigh_length*math.cos(jangles[0]) + self._shank_length*math.cos(jangles[0]-jangles[1]) - self._foot_length*math.sin(jangles[0]-jangles[1]-jangles[2]), self._right_hip_pos[1], self._thigh_length*math.sin(jangles[0]) + self._shank_length*math.sin(jangles[0]-jangles[1]) - self._foot_length*math.cos(jangles[0]-jangles[1]-jangles[2])]
+            #self._left_toe_pos = [self._thigh_length*math.cos(jangles[0]) + self._shank_length*math.cos(jangles[0]-jangles[1]) - self._foot_length*math.sin(jangles[0]-jangles[1]-jangles[2]), self._right_hip_pos[1], self._thigh_length*math.sin(jangles[0]) + self._shank_length*math.sin(jangles[0]-jangles[1]) - self._foot_length*math.cos(jangles[0]-jangles[1]-jangles[2])]
 
         print(self._right_knee_pos)
         print(self._right_hip_pos)
