@@ -9,51 +9,116 @@ import matplotlib.animation as animation
 # import Person and World objects
 from person_geometric import Person
 from world import *
-
+from dmp_walking import DMP
 def main():
 	# l - distance to s
 	# h - stair height
 	# r - stair run
 	# w = stair width
+	l = 2280.6
+	h = 177.8
+	r = 304.8
+	w = 609.6
 	# using 9in, 7in, 12in, and 24in in mm for base staircase (based on Al-b's staircase)
-	staircase = World(228.6, 177.8, 304.8, 609.6)
+	
 	# using Al-b's biometric data for leg length and foot size
 	subject = Person(1000, 279.4)
-	
 
-# def forward_kin(thi_len, shank_len, foot_len, q1, q2, q3, hip_pos):
-#     q1 = float(q1 * (math.pi) / 180)
-#     q2 = float(q2 * (math.pi) / 180)
-#     q3 = float(q3 * (math.pi) / 180)
+	dmp_runner = DMP("leg_info.csv")
+	dmp_runner.train();
 
-#     print(hip_pos[1])
-#     hip_pos = np.array([0, hip_pos[1], hip_pos[2]])
-#     knee_pos = np.array([0, (thi_len * cos(q1) + hip_pos[1]), -(thi_len * sin(q1) + hip_pos[2])])
-#     ankle_pos = np.array([0, (shank_len * cos(q1 + q2) + thi_len * cos(q1) + hip_pos[1]),
-#                           -(shank_len * sin(q1 + q2) + thi_len * sin(q1) + hip_pos[2])])
-#     toe_pos = np.array([0, (shank_len * cos(q1 + q2) + thi_len * cos(q1) - foot_len * sin(q1 + q2 + q3) + hip_pos[1]),
-#                         -(shank_len * sin(q1 + q2) + thi_len * sin(q1) + foot_len * sin(q1 + q2 + q3) + hip_pos[2])])
-#     xpos = np.array([hip_pos[1], knee_pos[1], ankle_pos[1], toe_pos[1]])
-#     ypos = np.array([hip_pos[2], knee_pos[2], ankle_pos[2], toe_pos[2]])
-#     return np.array([xpos, ypos])
+	step_length = subject._leg_lenth * 0.413
+	steps = l / step_length ;
 
+	walking_start_end_poses = []
+	stair_climb_start_end_poses = []
 
-# def plot_leg(angles, hip_pos):
-#     plt.ion()
-#     fig = plt.figure()
-#     axes = fig.add_subplot(111)
-#     p, = plt.plot([], [], 'r-')
-#     plt.xlabel('x')
-#     plt.title('walk_one_leg')
-#     axes.set_xlim([-1000,2000])
-#     axes.set_ylim([-2500, 2000])
-#     for m in range(0, len(angles[0])):
-#         curr_hip_pos = np.array([0, hip_pos[1, m], hip_pos[2, m]])
-#         positions = forward_kin(300.0, 300.0, 125.0, angles[0][m], (angles[1][m]+90), angles[2][m]-90, curr_hip_pos)
-#         print(positions)
-#         p.set_data(positions[0],positions[1])
-#         fig.canvas.draw()
+	print("start position")
+	subject.print_pos()
+	jangles = subject.inverse_kinematics();
+	print(jangles);
+	subject.forward_kinematics(jangles);
+	print("start position-after-ik-k")
+	subject.print_pos()
+	jangles = subject.inverse_kinematics();
+	print(jangles)
 
+	for i in range(0, int(steps)):
+		start_joint_angles = subject.inverse_kinematics();
+		foot = subject.getTrailingFoot();
+		foot_pos = foot[1];
+
+		subject.set_foot(foot[0], (foot_pos[0]), foot_pos[1], foot_pos[2]+step_length);
+		goal_joint_angles = subject.inverse_kinematics(); 
+
+		joint_pairs = []
+		for j in range(0, 6):
+			joint_pairs.append((start_joint_angles[j], goal_joint_angles[j]))
+
+		walking_start_end_poses.append(joint_pairs);
+		print("position update - forward")
+		print(str(subject._right_hip_pos[0]) + ' ' + str(subject._right_hip_pos[2]))
+		print(str(subject._right_knee_pos[0]) + ' ' + str(subject._right_knee_pos[2]))
+		print(str(subject._right_ankle_pos[0]) + ' ' + str(subject._right_ankle_pos[2]))
+		print(str(subject._right_toe_pos[0]) + ' ' + str(subject._right_toe_pos[2]))
+
+	stair_count = 2;
+	for i in range(0, int(stair_count)):
+		start_joint_angles = subject.inverse_kinematics();
+		foot = subject.getTrailingFoot();
+		foot_pos = foot[1];
+
+		subject.set_foot(foot[0], foot_pos[0]+ h , foot_pos[1], foot_pos[2] + (r * 0.75));	
+		goal_joint_angles = subject.inverse_kinematics(); 
+
+		joint_pairs = []
+		for j in range(0, 6):
+			joint_pairs.append((start_joint_angles[j], goal_joint_angles[j]))
+
+		stair_climb_start_end_poses.append(joint_pairs)
+		print("position update - up")
+		print(str(subject._right_hip_pos[0]) + ' ' + str(subject._right_hip_pos[2]))
+		print(str(subject._right_knee_pos[0]) + ' ' + str(subject._right_knee_pos[2]))
+		print(str(subject._right_ankle_pos[0]) + ' ' + str(subject._right_ankle_pos[2]))
+		print(str(subject._right_toe_pos[0]) + ' ' + str(subject._right_toe_pos[2]))
+
+	angles = []	
+	for i in walking_start_end_poses:
+		print("walk ")
+		angles.append(dmp_runner.run(i))
+
+	for i in stair_climb_start_end_poses:
+		print("step")
+		angles.append(dmp_runner.run(i))
+
+	staircase = World(l,h,r,w)
+	subject2 = Person(1000, 279.4)
+	i = 0;
+	for i in angles:	
+		print(len(angles))
+		for j in i:
+			print(len(i))
+			subject2.forward_kinematics(j);
+			plt.figure(1)
+			print(str(subject2._right_hip_pos[0]) + ' ' + str(subject2._right_hip_pos[2]))
+			print(str(subject2._right_knee_pos[0]) + ' ' + str(subject2._right_knee_pos[2]))
+			print(str(subject2._right_ankle_pos[0]) + ' ' + str(subject2._right_ankle_pos[2]))
+			print(str(subject2._right_toe_pos[0]) + ' ' + str(subject2._right_toe_pos[2]))
+
+			plt.plot(subject2._right_hip_pos[0], subject2._right_hip_pos[2], 'ro')
+			plt.plot(subject2._right_knee_pos[0], subject2._right_knee_pos[2], 'go')
+			plt.plot(subject2._right_ankle_pos[0], subject2._right_ankle_pos[2], 'bo')
+			plt.plot(subject2._right_toe_pos[0], subject2._right_toe_pos[2], 'ro')
+			
+			plt.pause(0.001)
+			plt.show()
+		break;	
+
+	input("What's your name? ")			
+			
+		
+
+		
 
 if __name__ == '__main__':
 	main()

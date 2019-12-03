@@ -21,23 +21,24 @@ class World(object):
 		self._r = r
 		self._w = w
 		self._2d_fig = self.plot_2D_world()
-		self._3d_fig = self.plot_3D_world()
-		plt.plot()
+		#self._3d_fig = self.plot_3D_world()
 
 	def plot_2D_world(self):
-		fig = plt.figure()
+		fig = plt.figure(1)
 		plt.plot([0,self._l,self._l,self._l+self._r*1,self._l+self._r*1,self._l+self._r*2,self._l+self._r*2,self._l+self._r*3],
 				 [0,0,self._h*1,self._h*1,self._h*2,self._h*2,self._h*3,self._h*3])
-		plt.axis([0,self._l+self._r,0,self._h*1.2])
+		#plt.axis([0,self._l+self._r,0,self._h*1.2])
+		plt.ion()
 		plt.show()
 		return fig
 
 	def plot_3D_world(self):
 		#need to incorporate width
-		fig = plt.figure()
+		fig = plt.figure(2)
 		plt.plot([0,self._l,self._l,self._l+self._r*1,self._l+self._r*1,self._l+self._r*2,self._l+self._r*2,self._l+self._r*3],
 				 [0,0,self._h*1,self._h*1,self._h*2,self._h*2,self._h*3,self._h*3])
-		plt.axis([0,self._l+self._r,0,self._h*1.2])
+		#plt.axis([0,self._l+self._r,0,self._h*1.2])
+		plt.ion()
 		plt.show()
 		return fig
 
