@@ -34,11 +34,20 @@ def main():
 	stair_climb_start_end_poses = []
 
 	print("start position")
-	print(str(subject._right_hip_pos[0]) + ' ' + str(subject._right_hip_pos[2]))
-	print(str(subject._right_knee_pos[0]) + ' ' + str(subject._right_knee_pos[2]))
-	print(str(subject._right_ankle_pos[0]) + ' ' + str(subject._right_ankle_pos[2]))
-	print(str(subject._right_toe_pos[0]) + ' ' + str(subject._right_toe_pos[2]))
-
+	print(str(subject._left_hip_pos[0]) + ' ' + str(subject._left_hip_pos[2]))
+	print(str(subject._left_knee_pos[0]) + ' ' + str(subject._left_knee_pos[2]))
+	print(str(subject._left_ankle_pos[0]) + ' ' + str(subject._left_ankle_pos[2]))
+	print(str(subject._left_toe_pos[0]) + ' ' + str(subject._left_toe_pos[2]))
+	jangles = subject.inverse_kinematics();
+	print(jangles);
+	subject.forward_kinematics(jangles);
+	print("start position-after-ik-k")
+	print(str(subject._left_hip_pos[0]) + ' ' + str(subject._left_hip_pos[2]))
+	print(str(subject._left_knee_pos[0]) + ' ' + str(subject._left_knee_pos[2]))
+	print(str(subject._left_ankle_pos[0]) + ' ' + str(subject._left_ankle_pos[2]))
+	print(str(subject._left_toe_pos[0]) + ' ' + str(subject._left_toe_pos[2]))
+	jangles = subject.inverse_kinematics();
+	print(jangles)
 
 	for i in range(0, int(steps)):
 		start_joint_angles = subject.inverse_kinematics();
@@ -95,7 +104,7 @@ def main():
 		print(len(angles))
 		for j in i:
 			print(len(i))
-			subject2.right_forward_kinematics( j[3], j[4], j[5], False)
+			subject2.forward_kinematics(j);
 			plt.figure(1)
 			print(str(subject2._right_hip_pos[0]) + ' ' + str(subject2._right_hip_pos[2]))
 			print(str(subject2._right_knee_pos[0]) + ' ' + str(subject2._right_knee_pos[2]))
@@ -109,6 +118,7 @@ def main():
 			
 			plt.pause(0.001)
 			plt.show()
+		break;	
 
 	input("What's your name? ")			
 			

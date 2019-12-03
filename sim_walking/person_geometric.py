@@ -41,10 +41,10 @@ class Person(object):
     def set_foot(self, foot, x, y, z):
         if foot == 'L':
             self._left_toe_pos = [x, y, z]
-            self._left_ankle_pos = [x-self.foot_length, y, z]
+            self._left_ankle_pos = [x-self._foot_length, y, z]
         else:
             self._right_toe_pos = [x, y, z]
-            self._right_ankle_pos = [x-self.foot_length, y, z]
+            self._right_ankle_pos = [x-self._foot_length, y, z]
 
         # regardless of foot that was set, calculate forward kinematics setting all joint positions
         # calculate inverse kinematics to obtain joint angles for forward kinematics        
@@ -100,4 +100,6 @@ class Person(object):
         self._right_knee_pos = [self._right_ankle_pos[0] + self._shank_length*math.cos(math.pi/2-jangles[5]), self._right_ankle_pos[1], self._right_ankle_pos[2] + self._shank_length*math.sin(math.pi/2-jangles[5])]
         self._right_hip_pos = [self._right_knee_pos[0] + self._thigh_length*math.cos(math.pi/2-jangles[5]+jangles[4]), self._right_ankle_pos[1], self._right_knee_pos[2] + self._thigh_length*math.sin(math.pi/2-jangles[5]+jangles[4])]
 
+        print(self._right_knee_pos)
+        print(self._right_hip_pos)
 
