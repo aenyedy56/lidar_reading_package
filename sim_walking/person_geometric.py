@@ -41,16 +41,16 @@ class Person(object):
     def set_foot(self, foot, x, y, z):
         if foot == 'L':
             self._left_toe_pos = [x, y, z]
-            self._left_ankle_pos = [x-self.foot_length, y, z]
+            self._left_ankle_pos = [x-self._foot_length, y, z]
             # calculation of knee and hip position too?
         else:
             self._right_toe_pos = [x, y, z]
-            self._right_ankle_pos = [x-self.foot_length, y, z]
+            self._right_ankle_pos = [x-self._foot_length, y, z]
             # calculation of knee and hip position too?
 
     # returns tuple of foot (L or R) and it's xyz location
     def getTrailingFoot(self):
-        if self._left_toe_pos[0] < _right_toe_pos[0]:
+        if self._left_toe_pos[0] < self._right_toe_pos[0]:
             return ('L', self._left_toe_pos)
         elif self._right_toe_pos[0] < self._left_toe_pos[0]:
             return ('R', self._right_toe_pos)
@@ -62,21 +62,21 @@ class Person(object):
     def inverse_kinematics(self):
         # see inverse_kinematics_setup_diagram.png for visual of what each theta references
         # using equations from paper https://www.researchgate.net/publication/291955972_An_inverse_kinematic_algorithm_for_the_human_leg
-        # ^ specifically from section 3, using equations 3.1
+        # ** specifically from section 3, using equations 3.1
 
         # I am assuming that the coordinate system is using x-z for 2D plot instead of x-y, and z is the vertical axis in 3D plot 
 
         # calculating inverse kinematics for left leg:
-        lhip_angle = np.arctan((self._left_toe_pos[2] - self._foot_length)/self._left_toe_pos[0]) + np.arccos((self._thigh_length^2 - self._shank_length^2 + self._left_toe_pos[0]^2 + (self._left_toe_pos[2]-self._foot_length)^2)/(2*self._thigh_length*math.sqrt(self._left_toe_pos[0]^2 + (self._left_toe_pos[2]-self._foot_length)^2)))
+        lhip_angle = np.arctan((self._left_toe_pos[2] - self._foot_length)/self._left_toe_pos[0]) + np.arccos((self._thigh_length**2 - self._shank_length**2 + self._left_toe_pos[0]**2 + (self._left_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._left_toe_pos[0]**2 + (self._left_toe_pos[2]-self._foot_length)**2)))
 
-        lknee_angle = np.arccos((self._left_toe_pos[0]^2 + (self._left_toe_pos[2] - self._foot_length)^2 - self._thigh_length^2 - self._shank_length^2)/(2*self._thigh_length*self._shank_length))
+        lknee_angle = np.arccos((self._left_toe_pos[0]**2 + (self._left_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
 
         lankle_angle = lhip_angle - lknee_angle + (math.pi/2)
 
         # calculating inverse kinematics for right leg:
-        rhip_angle = np.arctan((self._right_toe_pos[2] - self._foot_length)/self._right_toe_pos[0]) + np.arccos((self._thigh_length^2 - self._shank_length^2 + self._right_toe_pos[0]^2 + (self._right_toe_pos[2]-self._foot_length)^2)/(2*self._thigh_length*math.sqrt(self._right_toe_pos[0]^2 + (self._right_toe_pos[2]-self._foot_length)^2)))
+        rhip_angle = np.arctan((self._right_toe_pos[2] - self._foot_length)/self._right_toe_pos[0]) + np.arccos((self._thigh_length**2 - self._shank_length**2 + self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)))
 
-        rknee_angle = np.arccos((self._right_toe_pos[0]^2 + (self._right_toe_pos[2] - self._foot_length)^2 - self._thigh_length^2 - self._shank_length^2)/(2*self._thigh_length*self._shank_length))
+        rknee_angle = np.arccos((self._right_toe_pos[0]**2 + (self._right_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
 
         rankle_angle = rhip_angle - rknee_angle + (math.pi/2)
 
@@ -84,10 +84,6 @@ class Person(object):
         # returning array of jangles
         jangles_array = [lhip_angle, lknee_angle, lankle_angle, rhip_angle, rknee_angle, rankle_angle]
         return jangles_array
-
-
-
-
 
 
 
@@ -108,17 +104,19 @@ class Person(object):
     #         self._left_knee_pos = [self._left_hip_pos[0] - self._thigh_length*math.sin(q3), self._left_hip_pos[1], self._left_hip_pos[2] - self._thigh_length*math.cos(q3)]
     #         self._left_ankle_pos = [self._left_knee_pos[0] - self._shank_length*math.sin(q3-q2), self._left_hip_pos[1], self._left_knee_pos[2] - self._shank_length*math.cos(q3-q2)]
 
-    # # root is a boolean indicating whether the foot is base frame instead of hip being base frame.
-    # # q1 is ankle angle, q2 is knee angle, q3 is hip angle
-    # def right_forward_kinematics(self, q1, q2, q3, root):
-    #     # right leg is root leg, thus right foot is base frame for right leg
-    #     if root == True:
-    #         # Calculate positions of knee and hip (using self._right_ankle_pos[1] for y because everything is on x-z coordinate plane so y remains constant)
-    #         self._right_knee_pos = [self._right_ankle_pos[0] + self._shank_length*math.cos(q1), self._right_ankle_pos[1], self._right_ankle_pos[2] + self._shank_length*math.sin(q1)]
-    #         self._right_hip_pos = [self._right_knee_pos[0] + self._thigh_length*math.cos(q1+q2), self._right_ankle_pos[1], self._right_knee_pos[2] + self._thigh_length*math.sin(q1+q2)]
-
-    #     # right leg is moving, thus right hip is base frame for right leg
-    #     else:
-    #         # Calculate positions of knee and foot
-    #         self._right_knee_pos = [self._right_hip_pos[0] - self._thigh_length*math.sin(q3), self._right_hip_pos[1], self._right_hip_pos[2] - self._thigh_length*math.cos(q3)]
-    #         self._right_ankle_pos = [self._right_knee_pos[0] - self._shank_length*math.sin(q3-q2), self._right_hip_pos[1], self._right_knee_pos[2] - self._shank_length*math.cos(q3-q2)]
+     # root is a boolean indicating whether the foot is base frame instead of hip being base frame.
+     # q1 is ankle angle, q2 is knee angle, q3 is hip angle
+    def right_forward_kinematics(self, q1, q2, q3, root):
+        q1 = float(q1)
+        q2 = float(q2)
+        q3 = float(q3)
+        # right leg is root leg, thus right foot is base frame for right leg
+        if root == True:
+        # Calculate positions of knee and hip (using self._right_ankle_pos[1] for y because everything is on x-z coordinate plane so y remains constant)
+            self._right_knee_pos = [self._right_ankle_pos[0] + self._shank_length*math.cos(q1), self._right_ankle_pos[1], self._right_ankle_pos[2] + self._shank_length*math.sin(q1)]
+            self._right_hip_pos = [self._right_knee_pos[0] + self._thigh_length*math.cos(q1+q2), self._right_ankle_pos[1], self._right_knee_pos[2] + self._thigh_length*math.sin(q1+q2)]
+        # right leg is moving, thus right hip is base frame for right leg
+        else:
+        # Calculate positions of knee and foot
+            self._right_knee_pos = [self._right_hip_pos[0] - self._thigh_length*math.sin(q3), self._right_hip_pos[1], self._right_hip_pos[2] - self._thigh_length*math.cos(q3)]
+            self._right_ankle_pos = [self._right_knee_pos[0] - self._shank_length*math.sin(q3-q2), self._right_hip_pos[1], self._right_knee_pos[2] - self._shank_length*math.cos(q3-q2)]
