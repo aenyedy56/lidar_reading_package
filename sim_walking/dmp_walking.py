@@ -16,28 +16,31 @@ rank_dmp = 'rank_dmp'
 # desired foot positions
 # joint_trajs = invKin(foot) # array of desired start and end angle positions for each joint
 # hardcoded joint hip start and end for now
-lhip_pos = [-15,-9]
-lkne_pos = [-15,-3]
-lank_pos = [-10,-9]
-rhip_pos = [-15,-9]
-rkne_pos = [-15,-9]
-rank_pos = [-15,-9]
+steps = [[-12,26,-19,-6,65,-35],[-12.09,13,-9,-5,62,-35]]
+
+lhip_pos = [-12,-12.09]
+lkne_pos = [26.3,18.4]
+lank_pos = [-19,-9]
+rhip_pos = [-6,-5]
+rkne_pos = [67,63]
+rank_pos = [-35,-35]
 
 trial_len = 0
 T = []
 q = []
 qd = []
 qdd = []
+dt = 0.005
 with open(file) as csvfile:
     reader = csv.reader(csvfile)
     for row in reader:
         q = []
-        qd = []
-        qdd = []
+        qd = [0]
+        qdd = [0,0]
         for val in row:
             q.append(float(val))
-            qd.append(0.0)
-            qdd.append(0.0)
+        qd = np.append(qd, np.divide(np.diff(q, 1), np.power(dt, 1)))
+        qdd = np.append(qdd, np.divide(np.diff(q, 2), np.power(dt, 2)))
         T.append(q)
         T.append(qd)
         T.append(qdd)
@@ -52,8 +55,10 @@ with open(file) as csvfile:
 
 dt = Decimal(1) / Decimal(trial_len)
 dt = float(dt)
+print('DT')
+print(dt)
 
-num_basis_fcns = 1000
+num_basis_fcns = 500
 trained_lhip = train_dmp(lhip_dmp,num_basis_fcns,T_lhip,dt)
 trained_lkne = train_dmp(lkne_dmp,num_basis_fcns,T_lkne,dt)
 trained_lank = train_dmp(lank_dmp,num_basis_fcns,T_lank,dt)
@@ -76,10 +81,11 @@ for i in np.arange(0,int(tau/dt)+1):
 
 time = np.arange(0,tau+dt,dt)
 
-plt.title("2-D DMP demonstration")
+plt.title("Left Knee DMP")
 plt.xlabel("Time(t)")
 plt.ylabel("Angle Position(deg)")
 print(Y)
-plt.plot(time[1:4993],T_lhip[0])
-plt.plot(time,Y)
+plt.plot(time[1:len(time)],T_lkne[0], label = 'Training Trajectory')
+plt.plot(time,Y, label = 'DMP Trajectory')
+plt.legend(loc="upper left")
 plt._show()
