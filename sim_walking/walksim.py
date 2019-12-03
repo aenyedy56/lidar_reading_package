@@ -34,18 +34,12 @@ def main():
 	stair_climb_start_end_poses = []
 
 	print("start position")
-	print(str(subject._left_hip_pos[0]) + ' ' + str(subject._left_hip_pos[2]))
-	print(str(subject._left_knee_pos[0]) + ' ' + str(subject._left_knee_pos[2]))
-	print(str(subject._left_ankle_pos[0]) + ' ' + str(subject._left_ankle_pos[2]))
-	print(str(subject._left_toe_pos[0]) + ' ' + str(subject._left_toe_pos[2]))
+	subject.print_pos()
 	jangles = subject.inverse_kinematics();
 	print(jangles);
 	subject.forward_kinematics(jangles);
 	print("start position-after-ik-k")
-	print(str(subject._left_hip_pos[0]) + ' ' + str(subject._left_hip_pos[2]))
-	print(str(subject._left_knee_pos[0]) + ' ' + str(subject._left_knee_pos[2]))
-	print(str(subject._left_ankle_pos[0]) + ' ' + str(subject._left_ankle_pos[2]))
-	print(str(subject._left_toe_pos[0]) + ' ' + str(subject._left_toe_pos[2]))
+	subject.print_pos()
 	jangles = subject.inverse_kinematics();
 	print(jangles)
 
@@ -54,7 +48,7 @@ def main():
 		foot = subject.getTrailingFoot();
 		foot_pos = foot[1];
 
-		subject.set_foot(foot[0], (foot_pos[0]+step_length), foot_pos[1], foot_pos[2]);
+		subject.set_foot(foot[0], (foot_pos[0]), foot_pos[1], foot_pos[2]+step_length);
 		goal_joint_angles = subject.inverse_kinematics(); 
 
 		joint_pairs = []
@@ -74,7 +68,7 @@ def main():
 		foot = subject.getTrailingFoot();
 		foot_pos = foot[1];
 
-		subject.set_foot(foot[0], foot_pos[0] + (r * 0.75), foot_pos[1], foot_pos[2]+ h);	
+		subject.set_foot(foot[0], foot_pos[0]+ h , foot_pos[1], foot_pos[2] + (r * 0.75));	
 		goal_joint_angles = subject.inverse_kinematics(); 
 
 		joint_pairs = []
