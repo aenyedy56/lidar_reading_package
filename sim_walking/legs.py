@@ -45,6 +45,8 @@ data = Vicon.Vicon(file_path)
 model = data.get_model_output()
 markers = data.get_markers()
 markers.smart_sort()  # optional param to remove subject name
+
+# get positions of all the markers as tuples
 lthi_frame = markers.get_rigid_body('LASI')
 lkne_frame = markers.get_rigid_body('LKNE')
 lank_frame = markers.get_rigid_body('LANK')
@@ -55,6 +57,7 @@ rkne_frame = markers.get_rigid_body('RKNE')
 rank_frame = markers.get_rigid_body('RANK')
 rtoe_frame = markers.get_rigid_body('RTOE')
 
+#
 lthi_traj = get_marker_traj(lthi_frame)
 lkne_traj = get_marker_traj(lkne_frame)
 ltoe_traj = get_marker_traj(ltoe_frame)

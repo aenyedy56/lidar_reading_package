@@ -7,6 +7,17 @@ from decimal import *
 
 class DMP:
 
+#data I used to make graph for presentation
+# steps = [[-12,26,-19,-6,65,-35],[-12.09,13,-9,-5,62,-35]]
+
+# lhip_pos = [-12,-12.09]
+# lkne_pos = [26.3,18.4]
+# lank_pos = [-19,-9]
+# rhip_pos = [-6,-5]
+# rkne_pos = [67,63]
+# rank_pos = [-35,-35]
+
+
     def __init__(self, training_file):
         self._file = training_file
 
@@ -21,12 +32,12 @@ class DMP:
             reader = csv.reader(csvfile)
             for row in reader:
                 q = []
-                qd = []
-                qdd = []
+                qd = [0]
+                qdd = [0,0]
                 for val in row:
                     q.append(float(val))
-                    qd.append(0.0)
-                    qdd.append(0.0)
+                qd = np.append(qd, np.divide(np.diff(q, 1), np.power(dt, 1)))
+        	qdd = np.append(qdd, np.divide(np.diff(q, 2), np.power(dt, 2)))
                 T.append(q)
                 T.append(qd)
                 T.append(qdd)
@@ -71,7 +82,6 @@ class DMP:
         rkne_pos = start_end_pos[4]
         rank_pos = start_end_pos[5]
 
-        
 
         lhip_runner = DMP_runner(self._lhip_dmp,lhip_pos[0],lhip_pos[1])
         lkne_runner = DMP_runner(self._lkne_dmp,lkne_pos[0],lkne_pos[1])
@@ -92,5 +102,13 @@ class DMP:
             rkne_runner.step(tau, self._dt)
             rank_runner.step(tau, self._dt)
             Y.append((lhip_runner.y, lkne_runner.y, lank_runner.y, rhip_runner.y, rkne_runner.y, rank_runner.y))
-
         return Y
+
+# plt.title("Left Knee DMP")
+# plt.xlabel("Time(t)")
+# plt.ylabel("Angle Position(deg)")
+# print(Y)
+# plt.plot(time[1:len(time)],T_lkne[0], label = 'Training Trajectory')
+# plt.plot(time,Y, label = 'DMP Trajectory')
+# plt.legend(loc="upper left")
+# plt._show()
