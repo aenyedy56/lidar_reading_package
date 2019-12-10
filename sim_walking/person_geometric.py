@@ -79,19 +79,37 @@ class Person(object):
         angle = num/den
         print("angle")
         print(angle)
-        lhip_angle = np.arctan((self._left_toe_pos[2] - self._foot_length)/self._left_toe_pos[0]) + np.arccos(angle)
- 
 
-        lknee_angle = np.arccos((self._left_toe_pos[0]**2 + (self._left_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
-
+        # Inverse kinematics using axis from the paper (and now matching our current axis system)
+        lhip_angle = np.arctan((self._left_toe_pos[2]-self._foot_length)/self._left_toe_pos[0]) + np.arccos((self._thigh_length**2-self._shank_length**2+self._left_toe_pos[0]**2+(self._left_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._left_toe_pos[0]**2 + (self._left_toe_pos[2]-self._foot_length)**2)))
+        lknee_angle = np.arccos((self._left_toe_pos[0]**2+(self._left_toe_pos[2]-self._foot_length)**2-self._thigh_length**2-self._shank_length**2)/(2*self._thigh_length*self._shank_length))
         lankle_angle = lhip_angle - lknee_angle + (math.pi/2)
 
-        # calculating inverse kinematics for right leg:
-        rhip_angle = np.arctan((self._right_toe_pos[2] - self._foot_length)/self._right_toe_pos[0]) + np.arccos((self._thigh_length**2 - self._shank_length**2 + self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)))
-
-        rknee_angle = np.arccos((self._right_toe_pos[0]**2 + (self._right_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
-
+        rhip_angle = np.arctan((self._right_toe_pos[2]-self._foot_length)/self._right_toe_pos[0]) + np.arccos((self._thigh_length**2-self._shank_length**2+self._right_toe_pos[0]**2+(self._right_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)))
+        rknee_angle = np.arccos((self._right_toe_pos[0]**2+(self._right_toe_pos[2]-self._foot_length)**2-self._thigh_length**2-self._shank_length**2)/(2*self._thigh_length*self._shank_length))
         rankle_angle = rhip_angle - rknee_angle + (math.pi/2)
+
+        # correct angles to match properly how the angles output from DMP shoudl work
+        # lhip_angle = -1*lhip_angle
+        # lankle_angle = -1*lankle_angle
+        # rhip_angle = -1*rhip_angle
+        # rankle_angle = -1*rankle_angle
+
+        # original inverse kinematics trying to match our coordinate system
+        # lhip_angle = np.arctan((self._left_toe_pos[2] - self._foot_length)/self._left_toe_pos[0]) + np.arccos(angle)
+        #
+        # lknee_angle = np.arccos((self._left_toe_pos[0]**2 + (self._left_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
+        #
+        # lankle_angle = lhip_angle - lknee_angle + (math.pi/2)
+        #
+        # # calculating inverse kinematics for right leg:
+        # rhip_angle = np.arctan((self._right_toe_pos[2] - self._foot_length)/self._right_toe_pos[0]) + np.arccos((self._thigh_length**2 - self._shank_length**2 + self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)/(2*self._thigh_length*math.sqrt(self._right_toe_pos[0]**2 + (self._right_toe_pos[2]-self._foot_length)**2)))
+        #
+        # rknee_angle = np.arccos((self._right_toe_pos[0]**2 + (self._right_toe_pos[2] - self._foot_length)**2 - self._thigh_length**2 - self._shank_length**2)/(2*self._thigh_length*self._shank_length))
+        #
+        # rankle_angle = rhip_angle - rknee_angle + (math.pi/2)
+
+
 
         # returning array of jangles in degrees
         jangles_array = [lhip_angle, lknee_angle, lankle_angle, rhip_angle, rknee_angle, rankle_angle]
@@ -117,7 +135,7 @@ class Person(object):
             self._right_hip_pos = [self._left_hip_pos[0], self._right_hip_pos[1], self._left_hip_pos[2]] # hip positions remain constant between both legs
             self._right_knee_pos = [self._right_hip_pos[0] + self._thigh_length*math.cos(jangles[3]), self._right_hip_pos[1], self._right_hip_pos[2] + self._thigh_length*math.sin(jangles[3])]
             self._right_ankle_pos = [self._right_knee_pos[0] + self._shank_length*math.cos(jangles[3]-jangles[4]), self._right_hip_pos[1], self._right_knee_pos[2] + self._shank_length*math.sin(jangles[3]-jangles[4])]
-            self._right_toe_pos = [self._right_ankle_pos[0] + self._foot_length, self._right_ankle_pos[1], self._right_ankle_pos[2]]
+            self._right_toe_pos = [self._right_ankle_pos[0], self._right_ankle_pos[1], self._right_ankle_pos[2] + self._foot_length]
             # self._right_toe_pos = [
             # self._thigh_length*math.cos(jangles[3]) + self._shank_length*math.cos(jangles[3]-jangles[4]) - self._foot_length*math.sin(jangles[3]-jangles[4]-jangles[5] + (math.pi/2)), 
             # self._right_hip_pos[1], 
@@ -134,7 +152,7 @@ class Person(object):
             self._left_hip_pos = [self._right_hip_pos[0], self._left_hip_pos[1], self._right_hip_pos[2]] # hip positions remain constant between both legs
             self._left_knee_pos = [self._left_hip_pos[0] + self._thigh_length*math.sin(jangles[0]), self._left_hip_pos[1], self._left_hip_pos[2] + self._thigh_length*math.cos(jangles[0])]
             self._left_ankle_pos = [self._left_knee_pos[0] + self._shank_length*math.sin(jangles[0]-jangles[1]), self._left_hip_pos[1], self._left_knee_pos[2] + self._shank_length*math.cos(jangles[0]-jangles[1])]
-            self._left_toe_pos = [self._left_ankle_pos[0] + self._foot_length, self._left_ankle_pos[1], self._left_ankle_pos[2]]
+            self._left_toe_pos = [self._left_ankle_pos[0], self._left_ankle_pos[1], self._left_ankle_pos[2] + self._foot_length]
             # self._left_toe_pos = [
             #  self._thigh_length*math.cos(jangles[0]) + self._shank_length*math.cos(jangles[0]-jangles[1]) - self._foot_length*math.sin(jangles[0]-jangles[1]-jangles[2] + (math.pi/2)),
             #  self._right_hip_pos[1], 

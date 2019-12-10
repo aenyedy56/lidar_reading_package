@@ -91,8 +91,8 @@ def main():
 		print("step")
 		angles.append(dmp_runner.run(i))
 
-	staircase = World(l,h,r,w)
 	subject2 = Person(1000, 279.4)
+	staircase = World(l, h, r, w, subject2._leg_lenth)
 	i = 0;
 	for i in angles:	
 		print(len(angles))
