@@ -47,6 +47,11 @@ class Person(object):
             self._right_toe_pos = [x, y, z]
             self._right_ankle_pos = [x, y, z-self._foot_length]
 
+        # assume that hip will be located at the midpoint between the feet
+        for i in range(3):
+            self._right_hip_pos[i] = self._right_hip_pos[i] + (self._left_toe_pos[i] + self._right_toe_pos[i])/2
+            self._left_hip_pos[i] = self._left_hip_pos[i] + (self._left_toe_pos[i] + self._right_toe_pos[i])/2
+
         # regardless of foot that was set, calculate forward kinematics setting all joint positions
         # calculate inverse kinematics to obtain joint angles for forward kinematics        
         jangles = self.inverse_kinematics()
