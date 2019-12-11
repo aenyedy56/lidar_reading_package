@@ -8,6 +8,7 @@ from math import cos
 from sympy import *
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import copy
 
 # contains methods for setting the foot, finding the trailing foot, and computing inverse kinematics on a given frame
 # inverse kinematics assumes FOOT IS ON THE GROUND and not in an intermediate step (have to keep angle between ankle and floor 0-degrees)
@@ -71,6 +72,16 @@ class Person(object):
 
         # I am assuming that the coordinate system is using x-z for 2D plot instead of x-y, and z is the vertical axis in 3D plot 
 
+        # the inverse kinematics equations assume that the hip is at the ORIGIN of the coordinate system, thus we must offset all points to place hip at origin
+        # thus, we create an offset variable that takes the hip's global position in the simulation,
+        # -> temporarily transforms all points for hip to be at origin, then put all points back to original coordinates
+        left_hip_offset = copy.deepcopy(self._left_hip_pos)
+        right_hip_offset = copy.deepcopy(self._right_hip_pos)
+
+        # offset joint positions by hip position, to set hip at origin
+        self.subtract_hip_offset(left_hip_offset, right_hip_offset)
+
+
         # calculating inverse kinematics for left leg:
         num = (self._thigh_length**2 - self._shank_length**2 + (self._left_toe_pos[0]- self._foot_length*math.sin(0))**2 + (self._left_toe_pos[2]-self._foot_length*math.cos(0))**2)
         den = (2*self._thigh_length*math.sqrt(self._left_toe_pos[0]**2 + (self._left_toe_pos[2]-self._foot_length)**2))
@@ -109,6 +120,8 @@ class Person(object):
         #
         # rankle_angle = rhip_angle - rknee_angle + (math.pi/2)
 
+        # reset joint positions to proper locations in world frame
+        self.add_hip_offset(left_hip_offset, right_hip_offset)
 
 
         # returning array of jangles in degrees
@@ -172,3 +185,30 @@ class Person(object):
         print(str(self._right_ankle_pos[0]) + ' ' + str(self._right_ankle_pos[2]))
         print(str(self._right_toe_pos[0]) + ' ' + str(self._right_toe_pos[2]))
 
+    # vector subtraction method for applying the hip offset: subtraction
+    def subtract_hip_offset(self, left_hip_offset, right_hip_offset):
+        # adding x, then y, then z elements of each position vector
+        for i in range(3):
+            self._left_hip_pos[i] = self._left_hip_pos[i] - left_hip_offset[i]
+            self._left_knee_pos[i] = self._left_knee_pos[i] - left_hip_offset[i]
+            self._left_ankle_pos[i] = self._left_ankle_pos[i] - left_hip_offset[i]
+            self._left_toe_pos[i] = self._left_toe_pos[i] - left_hip_offset[i]
+
+            self._right_hip_pos[i] = self._right_hip_pos[i] - right_hip_offset[i]
+            self._right_knee_pos[i] = self._right_knee_pos[i] - right_hip_offset[i]
+            self._right_ankle_pos[i] = self._right_ankle_pos[i] - right_hip_offset[i]
+            self._right_toe_pos[i] = self._right_toe_pos[i] - right_hip_offset[i]
+
+    # vector addition method for applying the hip offset: addition
+    def add_hip_offset(self, left_hip_offset, right_hip_offset):
+        # adding x, then y, then z elements of each position vector
+        for i in range(3):
+            self._left_hip_pos[i] = self._left_hip_pos[i] + left_hip_offset[i]
+            self._left_knee_pos[i] = self._left_knee_pos[i] + left_hip_offset[i]
+            self._left_ankle_pos[i] = self._left_ankle_pos[i] + left_hip_offset[i]
+            self._left_toe_pos[i] = self._left_toe_pos[i] + left_hip_offset[i]
+
+            self._right_hip_pos[i] = self._right_hip_pos[i] + right_hip_offset[i]
+            self._right_knee_pos[i] = self._right_knee_pos[i] + right_hip_offset[i]
+            self._right_ankle_pos[i] = self._right_ankle_pos[i] + right_hip_offset[i]
+            self._right_toe_pos[i] = self._right_toe_pos[i] + right_hip_offset[i]
