@@ -50,6 +50,7 @@ class Person(object):
             self._right_ankle_pos = [x, y, z-self._foot_length]
             average_toe = [(self._right_toe_pos[0]-self._left_toe_pos[0])/2, (self._right_toe_pos[1]-self._left_toe_pos[1])/2,(self._right_toe_pos[2]-self._right_toe_pos[2])/2]
             self._right_hip_pos = [self._right_hip_pos[0], average_toe[1], self._right_hip_pos[2]+ average_toe[2]]
+
         # regardless of foot that was set, calculate forward kinematics setting all joint positions
         # calculate inverse kinematics to obtain joint angles for forward kinematics        
         jangles = self.inverse_kinematics()
