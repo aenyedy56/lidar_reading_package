@@ -60,46 +60,34 @@ class LegsDMP(object):
             plt._show()
 
     def move(self, steps, walk):
-        for i in range(0,len(steps)-1):
+        groups =[]
+        for i in range(0,len(steps)):
             if walk == 1:
-                lhip_runner = DMP_runner(self._lhip_dmp_walk, steps[i][0], steps[i+1][0])
-                lkne_runner = DMP_runner(self._lkne_dmp_walk, steps[i][1], steps[i+1][1])
-                lank_runner = DMP_runner(self._lank_dmp_walk, steps[i][2], steps[i+1][2])
-                rhip_runner = DMP_runner(self._rhip_dmp_walk, steps[i][3], steps[i+1][3])
-                rkne_runner = DMP_runner(self._rkne_dmp_walk, steps[i][4], steps[i+1][4])
-                rank_runner = DMP_runner(self._rank_dmp_walk, steps[i][5], steps[i+1][5])
+                lhip_runner = DMP_runner(self._lhip_dmp_walk, steps[i][0][0], steps[i][0][1])
+                lkne_runner = DMP_runner(self._lkne_dmp_walk, steps[i][1][0], steps[i][1][1])
+                lank_runner = DMP_runner(self._lank_dmp_walk, steps[i][2][0], steps[i][2][1])
             elif walk == 0:
                 lhip_runner = DMP_runner(self._lhip_dmp_stair, steps[i][0], steps[i+1][0])
                 lkne_runner = DMP_runner(self._lkne_dmp_stair, steps[i][1], steps[i+1][1])
                 lank_runner = DMP_runner(self._lank_dmp_stair, steps[i][2], steps[i+1][2])
-                rhip_runner = DMP_runner(self._rhip_dmp_stair, steps[i][3], steps[i+1][3])
-                rkne_runner = DMP_runner(self._rkne_dmp_stair, steps[i][4], steps[i+1][4])
-                rank_runner = DMP_runner(self._rank_dmp_stair, steps[i][5], steps[i+1][5])
 
-        # dmp computed joint trajectories
-        lhip_traj = []
-        lkne_traj = []
-        lank_traj = []
-        rhip_traj = []
-        rkne_traj = []
-        rank_traj = []
-        self.tau = 1
-        for i in np.arange(0,int(self.tau/self.dt)+1):
-            lhip_runner.step(self.tau, self.dt)
-            lkne_runner.step(self.tau, self.dt)
-            lank_runner.step(self.tau, self.dt)
-            rhip_runner.step(self.tau, self.dt)
-            rkne_runner.step(self.tau, self.dt)
-            rank_runner.step(self.tau, self.dt)
-            lhip_traj.append(lhip_runner.y)
-            lkne_traj.append(lkne_runner.y)
-            lank_traj.append(lank_runner.y)
-            rhip_traj.append(rhip_runner.y)
-            rkne_traj.append(rkne_runner.y)
-            rank_traj.append(rank_runner.y)
-        dmp_traj = [lhip_traj,lkne_traj,lank_traj,rhip_traj,rkne_traj,rank_traj]
-        self.plot_angle_trajectories(dmp_traj)
-        return dmp_traj
+            # dmp computed joint trajectories
+            lhip_traj = []
+            lkne_traj = []
+            lank_traj = []
+            rhip_traj = []
+            rkne_traj = []
+            rank_traj = []
+            dmp_traj = []
+            self.tau = 1
+            for i in np.arange(0,int(self.tau/self.dt)+1):
+                lhip_runner.step(self.tau, self.dt)
+                lkne_runner.step(self.tau, self.dt)
+                lank_runner.step(self.tau, self.dt)
+                dmp_traj.append([lhip_runner.y,lkne_runner.y,lank_runner.y])
+            groups.append(dmp_traj)
+        #self.plot_angle_trajectories(dmp_traj)
+        return groups
 
 
     def train_legs(self, csvname, num_basis_fcns, walk):
@@ -133,9 +121,9 @@ class LegsDMP(object):
             T_lhip = T[0:3]
             T_lkne = T[3:6]
             T_lank = T[6:9]
-            T_rhip = T[9:12]
-            T_rkne = T[12:15]
-            T_rank = T[15:18]
+            # T_rhip = T[9:12]
+            # T_rkne = T[12:15]
+            # T_rank = T[15:18]
 
             trial_len = len(q)
 
@@ -147,15 +135,15 @@ class LegsDMP(object):
             self.trained_lhip_walk = train_dmp(self._lhip_dmp_walk,num_basis_fcns,T_lhip,self.dt)
             self.trained_lkne_walk = train_dmp(self._lkne_dmp_walk,num_basis_fcns,T_lkne,self.dt)
             self.trained_lank_walk = train_dmp(self._lank_dmp_walk,num_basis_fcns,T_lank,self.dt)
-            self.trained_rhip_walk = train_dmp(self._rhip_dmp_walk,num_basis_fcns,T_rhip,self.dt)
-            self.trained_rkne_walk = train_dmp(self._rkne_dmp_walk,num_basis_fcns,T_rkne,self.dt)
-            self.trained_rank_walk = train_dmp(self._rank_dmp_walk,num_basis_fcns,T_rank,self.dt)
+            # self.trained_rhip_walk = train_dmp(self._rhip_dmp_walk,num_basis_fcns,T_rhip,self.dt)
+            # self.trained_rkne_walk = train_dmp(self._rkne_dmp_walk,num_basis_fcns,T_rkne,self.dt)
+            # self.trained_rank_walk = train_dmp(self._rank_dmp_walk,num_basis_fcns,T_rank,self.dt)
         elif walk == 0:
             self.trained_lhip_stair = train_dmp(self._lhip_dmp_stair, num_basis_fcns, T_lhip, self.dt)
             self.trained_lkne_stair = train_dmp(self._lkne_dmp_stair, num_basis_fcns, T_lkne, self.dt)
             self.trained_lank_stair = train_dmp(self._lank_dmp_stair, num_basis_fcns, T_lank, self.dt)
-            self.trained_rhip_stair = train_dmp(self._rhip_dmp_stair, num_basis_fcns, T_rhip, self.dt)
-            self.trained_rkne_stair = train_dmp(self._rkne_dmp_stair, num_basis_fcns, T_rkne, self.dt)
-            self.trained_rank_stair = train_dmp(self._rank_dmp_stair, num_basis_fcns, T_rank, self.dt)
+            # self.trained_rhip_stair = train_dmp(self._rhip_dmp_stair, num_basis_fcns, T_rhip, self.dt)
+            # self.trained_rkne_stair = train_dmp(self._rkne_dmp_stair, num_basis_fcns, T_rkne, self.dt)
+            # self.trained_rank_stair = train_dmp(self._rank_dmp_stair, num_basis_fcns, T_rank, self.dt)
 
 
