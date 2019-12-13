@@ -96,12 +96,12 @@ for i in range(0, int(steps)):
 
 	walking_start_end_poses.append(joint_pairs);
 
-	plt.figure(1)
-	plt.plot(subject._left_hip_pos[0], subject._left_hip_pos[2], 'ro')
-	plt.plot(subject._left_knee_pos[0], subject._left_knee_pos[2], 'go')
-	plt.plot(subject._left_ankle_pos[0], subject._left_ankle_pos[2], 'bo')
-	plt.plot(subject._left_toe_pos[0], subject._left_toe_pos[2], 'mo')
-	plt.pause(0.01)
+	# plt.figure(1)
+	# plt.plot(subject._left_hip_pos[0], subject._left_hip_pos[2], 'ro')
+	# plt.plot(subject._left_knee_pos[0], subject._left_knee_pos[2], 'go')
+	# plt.plot(subject._left_ankle_pos[0], subject._left_ankle_pos[2], 'bo')
+	# plt.plot(subject._left_toe_pos[0], subject._left_toe_pos[2], 'mo')
+	# plt.pause(0.01)
 
 stair_count = 1;
 for i in range(0, int(stair_count)):
@@ -116,13 +116,13 @@ for i in range(0, int(stair_count)):
 
 	stair_climb_start_end_poses.append(joint_pairs)
 
-	plt.figure(1)
-	plt.plot(subject._left_hip_pos[0], subject._left_hip_pos[2], 'ro')
-	plt.plot(subject._left_knee_pos[0], subject._left_knee_pos[2], 'go')
-	plt.plot(subject._left_ankle_pos[0], subject._left_ankle_pos[2], 'bo')
-	plt.plot(subject._left_toe_pos[0], subject._left_toe_pos[2], 'mo')
+# 	plt.figure(1)
+# 	plt.plot(subject._left_hip_pos[0], subject._left_hip_pos[2], 'ro')
+# 	plt.plot(subject._left_knee_pos[0], subject._left_knee_pos[2], 'go')
+# 	plt.plot(subject._left_ankle_pos[0], subject._left_ankle_pos[2], 'bo')
+# 	plt.plot(subject._left_toe_pos[0], subject._left_toe_pos[2], 'mo')
 
-plt.show()
+# plt.show()
 print(walking_start_end_poses)
 print(stair_climb_start_end_poses)
 
@@ -131,8 +131,9 @@ walk_angles = dmp_runner.move(walking_start_end_poses,1)
 stair_angles = dmp_runner.move(stair_climb_start_end_poses,1)
 
 subject2 = Person_simplified(1000, 279.4)
-staircase = World(l, h, r, w, subject2._leg_lenth)
+#staircase = World(l, h, r, w, subject2._leg_lenth)
 i = 0;
+data_frames = []
 print(len(walk_angles))
 for i in walk_angles:
 	print("step " + str(len(i)))
@@ -140,11 +141,14 @@ for i in walk_angles:
 	for j in i:
 		#disp(j)
 		subject2.forward_kinematics2(j, (step_length/len(i)), 0);
-		plt.figure(1) 
-		plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
-		plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
-		plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
-		plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
+		x = [subject2._left_hip_pos[0], subject2._left_knee_pos[0], subject2._left_ankle_pos[0], subject2._left_toe_pos[0]]
+		y = [subject2._left_hip_pos[2], subject2._left_knee_pos[2], subject2._left_ankle_pos[2], subject2._left_toe_pos[2]]
+		data_frames.append([x, y])
+		# plt.figure(1) 
+		# plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
+		# plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
+		# plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
+		# plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
 		jangles = j
 	# The starting position is stainding striaght up, and since there is no back leg
 	# the leg doesn't come back down which requires the back hip rotating 
@@ -154,28 +158,64 @@ for i in walk_angles:
 		plt.figure(1) 
 		subject2.step_down(distance_down/50)
 		subject2.forward_kinematics2(j, 0,0);
-		plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
-		plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
-		plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
-		plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
-	plt.show()
-	plt.pause(0.1)
+		x = [subject2._left_hip_pos[0], subject2._left_knee_pos[0], subject2._left_ankle_pos[0], subject2._left_toe_pos[0]]
+		y = [subject2._left_hip_pos[2], subject2._left_knee_pos[2], subject2._left_ankle_pos[2], subject2._left_toe_pos[2]]
+		data_frames.append([x, y])
+		# plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
+		# plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
+		# plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
+		# plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
+	# plt.show()
+	# plt.pause(0.1)
 
 print(len(stair_angles))
 for i in stair_angles:
 	print("step " + str(len(i)))
 	for j in i:
-		#disp(j)
+		#disp(j) 
+		
 		subject2.forward_kinematics2(j, ((r*0.75)/len(i)), (h/(len(i))));
-		plt.figure(1) 
-		plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
-		plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
-		plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
-		plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
-	plt.show()
-	plt.pause(0.1)
 
-	
+		x = [subject2._left_hip_pos[0], subject2._left_knee_pos[0], subject2._left_ankle_pos[0], subject2._left_toe_pos[0]]
+		y = [subject2._left_hip_pos[2], subject2._left_knee_pos[2], subject2._left_ankle_pos[2], subject2._left_toe_pos[2]]
+		data_frames.append([x, y])
+
+	# 	plt.figure(1) 
+	# 	plt.plot(subject2._left_hip_pos[0], subject2._left_hip_pos[2], 'ro')
+	# 	plt.plot(subject2._left_knee_pos[0], subject2._left_knee_pos[2], 'go')
+	# 	plt.plot(subject2._left_ankle_pos[0], subject2._left_ankle_pos[2], 'bo')
+	# 	plt.plot(subject2._left_toe_pos[0], subject2._left_toe_pos[2], 'mo')
+	# plt.show()
+	# plt.pause(0.1)
+
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+fig, ax = plt.subplots()
+ax.axis([-500, 1200, -100, l + 1000])
+line, = ax.plot([], [])
+line2, = ax.plot([subject2._leg_lenth, subject2._leg_lenth, subject2._leg_lenth - h, subject2._leg_lenth - h],
+				 [0, l, l, l+r])
+
+def init():
+	line, = ax.plot([], [])
+	line2, = ax.plot([subject2._leg_lenth, subject2._leg_lenth, subject2._leg_lenth - h, subject2._leg_lenth - h],
+				 [0, l, l, l+r])
+
+	return line, line2,
+
+def animate(i):
+	#print(i)
+	#print(data_frames[i])
+	y = data_frames[i]
+	line.set_data(y)	
+	return line, line2,
+
+
+
+ani = animation.FuncAnimation(fig, animate, init_func=init, interval=10, frames=len(data_frames), blit=True, save_count=50)
+ani.save('walking.mp4', writer=writer)
+plt.show()
+input("asdf")
 
 		
 			
